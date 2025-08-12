@@ -1,0 +1,11 @@
+{
+  "id": null,
+  "name": "The Rabbit and the Computer",
+  "author": "Story Author",
+  "ageGroup": "3-5",
+  "language": "en",
+  "pageCount": 3,
+  "createdDate": "2025-01-15T00:00:00Z",
+  "tags": ["animals", "friendship", "adventure"],
+  "bookType": "default"
+}
