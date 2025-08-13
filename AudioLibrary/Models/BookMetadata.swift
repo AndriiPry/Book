@@ -15,4 +15,5 @@ struct BookMetadata: Codable, Equatable {
     let language: String
     let pageCount: Int
     let tags: [String]
+    let bookType: String
 }

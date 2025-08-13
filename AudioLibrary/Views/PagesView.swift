@@ -9,6 +9,8 @@ import AVFoundation
 
 struct PagesView: View {
     let pages: [Page]
+    
+    @State private var isAudioPaused: Bool = false
     @State private var currentPageIndex: Int = 0
     @State private var dragOffset: CGSize = .zero
     @State private var isAudioMode: Bool = false // false = read myself, true = read for me
@@ -35,6 +37,12 @@ struct PagesView: View {
         static let animationDuration: TimeInterval = 0.8
         static let bounceAnimationDuration: TimeInterval = 0.8
         static let preloadRange: Int = 2
+        
+        // Button styling constants
+        static let buttonBackgroundOpacity: Double = 0.8
+        static let buttonStrokeOpacity: Double = 0.3
+        static let arrowButtonOpacity: Double = 0.7
+        static let strokeWidth: CGFloat = 1
     }
     
     init(pages: [Page], clickedHomeButton: Binding<Bool>) {
@@ -42,71 +50,70 @@ struct PagesView: View {
         self._clickedHomeButton = clickedHomeButton
     }
     
+    // MARK: - Device-specific properties
+    
     private var arrowsHorizontalPadding: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 30
-        default:
-            return -30
-        }
+        UIDevice.current.userInterfaceIdiom == .pad ? 30 : -30
     }
     
-    private var arrowsbottomPadding: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 20
-        default:
-            return 0
-        }
+    private var arrowsBottomPadding: CGFloat {
+        UIDevice.current.userInterfaceIdiom == .pad ? 20 : 0
     }
     
     private var symbolFontSize: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 42
-        default:
-            return 24
-        }
+        UIDevice.current.userInterfaceIdiom == .pad ? 42 : 24
     }
     
-    private var ButtonSize: CGFloat{
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 70
-        default:
-            return 50
-        }
+    private var buttonSize: CGFloat {
+        UIDevice.current.userInterfaceIdiom == .pad ? 70 : 50
     }
     
     private var pageCounterFontSize: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 28
-        default:
-            return 20
-        }
+        UIDevice.current.userInterfaceIdiom == .pad ? 28 : 20
     }
     
-    private var pageCounterSize: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return 70
-        default:
-            return 50
+    // MARK: - Reusable Button Styles
+    
+    private func circularButtonStyle(size: CGFloat, backgroundOpacity: Double = Constants.buttonBackgroundOpacity) -> some View {
+        Circle()
+            .fill(Color.gray.opacity(backgroundOpacity))
+            .stroke(Color.white.opacity(Constants.buttonStrokeOpacity), lineWidth: Constants.strokeWidth)
+            .frame(width: size, height: size)
+    }
+    
+    private func standardButton(systemName: String, action: @escaping () -> Void, opacity: Double = 1.0, disabled: Bool = false) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: symbolFontSize, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: buttonSize, height: buttonSize)
+                .background(circularButtonStyle(size: buttonSize))
         }
+        .opacity(opacity)
+        .disabled(disabled)
+    }
+    
+    private func arrowButton(systemName: String, action: @escaping () -> Void, isEnabled: Bool) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 40, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: Constants.arrowButtonSize, height: Constants.arrowButtonSize)
+                .background(circularButtonStyle(size: Constants.arrowButtonSize, backgroundOpacity: Constants.arrowButtonOpacity))
+        }
+        .opacity(isEnabled ? 1.0 : 0.3)
+        .disabled(!isEnabled)
     }
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
                 LinearGradient(
-                    colors: [
-                        .black
-                    ],
+                    colors: [.black],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
-                .ignoresSafeArea() // 
+                .ignoresSafeArea()
 
                 // Background pages
                 ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
@@ -123,87 +130,54 @@ struct PagesView: View {
                     Spacer()
                     
                     HStack {
-                        // prev page
-                        Button(action: goToPreviousPage) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 40, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: Constants.arrowButtonSize, height: Constants.arrowButtonSize)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.7))
-                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                )
-                        }
-                        .opacity(currentPageIndex > 0 ? 1.0 : 0.3)
-                        .disabled(currentPageIndex <= 0)
+                        arrowButton(
+                            systemName: "chevron.left",
+                            action: goToPreviousPage,
+                            isEnabled: currentPageIndex > 0
+                        )
                         
                         Spacer()
                         
-                        // next page
-                        Button(action: goToNextPage) {
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 40, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: Constants.arrowButtonSize, height: Constants.arrowButtonSize)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.7))
-                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                )
-                        }
-                        .opacity(currentPageIndex < pages.count - 1 ? 1.0 : 0.3)
-                        .disabled(currentPageIndex >= pages.count - 1)
+                        arrowButton(
+                            systemName: "chevron.right",
+                            action: goToNextPage,
+                            isEnabled: currentPageIndex < pages.count - 1
+                        )
                     }
                     .padding(.horizontal, arrowsHorizontalPadding)
-                    .padding(.bottom, arrowsbottomPadding)
+                    .padding(.bottom, arrowsBottomPadding)
                 }
                 
+                // Top navigation
                 VStack {
                     HStack {
                         VStack {
-                            Button(action: {
-                                if isAudioMode {
-                                    toggleReadingMode()
-                                }
-                                clickedHomeButton = true
-                            }) {
-                                Image(systemName: "house.fill")
-                                    .font(.system(size: symbolFontSize, weight: .medium))
-                                    .foregroundColor(.white)
-                                    .frame(width: ButtonSize, height: ButtonSize)
-                                    .background(
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.8))
-                                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                    )
-                            }
+                            standardButton(
+                                systemName: "house.fill",
+                                action: handleHomeButton
+                            )
                             
-                            Text("\(currentPageIndex + 1)/\(pages.count)")
-                                .font(.system(size: pageCounterFontSize, weight: .medium))
-                                .foregroundColor(.white)
-                                .frame(width: ButtonSize, height: ButtonSize)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.8))
-                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                )
-                                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0), value: isTransitioning)
-                        }.offset(y:20)
+                            pageCounterView
+                        }
+                        .offset(y: 20)
                         
                         Spacer()
                         
-                        Button(action: toggleReadingMode) {
-                            Image(systemName: !isAudioMode ? "speaker.wave.2.fill" : "book.fill")
-                                .font(.system(size: symbolFontSize, weight: .medium))
-                                .foregroundColor(.white)
-                                .frame(width: ButtonSize, height: ButtonSize)
-                                .background(
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.8))
-                                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        VStack {
+                            standardButton(
+                                systemName: !isAudioMode ? "speaker.wave.2.fill" : "book.fill",
+                                action: toggleReadingMode
+                            )
+                            
+                            if isAudioMode {
+                                standardButton(
+                                    systemName: isAudioPaused ? "play.fill" : "pause.fill",
+                                    action: toggleAudioPlayback
                                 )
+                                .transition(.scale.combined(with: .opacity))
+                            }
                         }
+                        .offset(y: 20)
                     }
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
@@ -223,20 +197,44 @@ struct PagesView: View {
         }
     }
     
+    // MARK: - UI Components
+    
+    private var pageCounterView: some View {
+        Text("\(currentPageIndex + 1)/\(pages.count)")
+            .font(.system(size: pageCounterFontSize, weight: .medium))
+            .foregroundColor(.white)
+            .frame(width: buttonSize, height: buttonSize)
+            .background(circularButtonStyle(size: buttonSize))
+            .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0), value: isTransitioning)
+    }
+    
+    // MARK: - Action Handlers
+    
+    private func handleHomeButton() {
+        if isAudioMode {
+            toggleReadingMode()
+        }
+        clickedHomeButton = true
+    }
+    
     // MARK: - Lazy Image Loading
     
     private func loadImagesForCurrentPage() {
-        //+ nearby
-        let startIndex = max(0, currentPageIndex - Constants.preloadRange)
-        let endIndex = min(pages.count - 1, currentPageIndex + Constants.preloadRange)
+        let range = getPageLoadRange()
         
-        for i in startIndex...endIndex {
+        for i in range.startIndex...range.endIndex {
             if i < pages.count {
                 loadImageForPageIfNeeded(pages[i].pageNumber)
             }
         }
         
         cleanupDistantImages()
+    }
+    
+    private func getPageLoadRange() -> (startIndex: Int, endIndex: Int) {
+        let startIndex = max(0, currentPageIndex - Constants.preloadRange)
+        let endIndex = min(pages.count - 1, currentPageIndex + Constants.preloadRange)
+        return (startIndex, endIndex)
     }
     
     private func loadImageForPageIfNeeded(_ pageNumber: Int) {
@@ -248,16 +246,14 @@ struct PagesView: View {
         isLoadingImages.insert(pageNumber)
         
         DispatchQueue.global(qos: .userInitiated).async {
+            let image = getImage(at: imagePath)
             
-            let image = self.getImage(at: imagePath)
-            
-            // main thread
             DispatchQueue.main.async {
-                self.isLoadingImages.remove(pageNumber)
+                isLoadingImages.remove(pageNumber)
                 
                 if let image = image {
-                    self.PagesImages[pageNumber] = Image(uiImage: image)
-                    self.loadedPageImages.insert(pageNumber)
+                    PagesImages[pageNumber] = Image(uiImage: image)
+                    loadedPageImages.insert(pageNumber)
                 }
             }
         }
@@ -273,7 +269,7 @@ struct PagesView: View {
             return pageIndex < startKeep || pageIndex > endKeep
         }
         
-        for pageNumber in pagesToRemove {
+        pagesToRemove.forEach { pageNumber in
             PagesImages.removeValue(forKey: pageNumber)
             loadedPageImages.remove(pageNumber)
         }
@@ -296,52 +292,44 @@ struct PagesView: View {
     }
     
     private func goToPreviousPage() {
-        if currentPageIndex > 0 {
-            
-            if isAudioMode && isAudioPlaying {
-                DispatchQueue.global(qos: .userInteractive).async {
-                    stopAudio()
-                }
-            }
-            
-            // Start animation immediately
-            withAnimation(.snappy(duration: Constants.animationDuration)) {
-                currentPageIndex -= 1
-                dragOffset = .zero
-            }
-            
-            if isAudioMode {
-                DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 1.1) {
-                    playCurrentPageAudio()
-                }
-            }
+        guard currentPageIndex > 0 else { return }
+        
+        handlePageTransition {
+            currentPageIndex -= 1
         }
     }
     
     private func goToNextPage() {
-        if currentPageIndex < pages.count - 1 {
-                        if isAudioMode && isAudioPlaying {
-                DispatchQueue.global(qos: .userInteractive).async {
-                    stopAudio()
-                }
+        guard currentPageIndex < pages.count - 1 else { return }
+        
+        handlePageTransition {
+            currentPageIndex += 1
+        }
+    }
+    
+    private func handlePageTransition(_ updateIndex: () -> Void) {
+        if isAudioMode && isAudioPlaying {
+            DispatchQueue.global(qos: .userInteractive).async {
+                stopAudio()
             }
-            
-            withAnimation(.snappy(duration: Constants.animationDuration)) {
-                currentPageIndex += 1
-                dragOffset = .zero
-            }
-            
-            if isAudioMode {
-                DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 1.1) {
-                    playCurrentPageAudio()
-                }
+        }
+        
+        withAnimation(.snappy(duration: Constants.animationDuration)) {
+            updateIndex()
+            dragOffset = .zero
+        }
+        
+        if isAudioMode {
+            DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + 1.1) {
+                playCurrentPageAudio()
             }
         }
     }
     
     private func toggleReadingMode() {
         isAudioMode.toggle()
-    
+        isAudioPaused = false // Reset paused state when toggling mode
+        
         DispatchQueue.global(qos: .userInteractive).async {
             if isAudioMode {
                 playCurrentPageAudio()
@@ -363,48 +351,67 @@ struct PagesView: View {
             let player = try AVAudioPlayer(contentsOf: audioURL)
             
             DispatchQueue.main.async {
-                self.audioPlayer = player
+                audioPlayer = player
+                setupAudioDelegate()
                 
-                self.audioDelegate = AudioPlayerDelegate(
-                    onAudioFinished: handleAudioFinished,
-                    onAudioStarted: handleAudioStarted
-                )
-                self.audioPlayer?.delegate = self.audioDelegate
-                
-                // Start playback
-                self.audioPlayer?.play()
-                self.isAudioPlaying = true
+                if !isAudioPaused {
+                    player.play()
+                    isAudioPlaying = true
+                } else {
+                    player.prepareToPlay()
+                    isAudioPlaying = false
+                }
             }
         } catch {
             print("Error playing audio: \(error)")
             DispatchQueue.main.async {
-                self.isAudioPlaying = false
+                isAudioPlaying = false
             }
+        }
+    }
+    
+    private func setupAudioDelegate() {
+        audioDelegate = AudioPlayerDelegate(
+            onAudioFinished: handleAudioFinished,
+            onAudioStarted: handleAudioStarted
+        )
+        audioPlayer?.delegate = audioDelegate
+    }
+    
+    private func toggleAudioPlayback() {
+        guard isAudioMode, let player = audioPlayer else { return }
+        
+        if isAudioPaused {
+            player.play()
+            isAudioPaused = false
+            isAudioPlaying = true
+        } else {
+            player.pause()
+            isAudioPaused = true
+            isAudioPlaying = false
         }
     }
     
     private func stopAudio() {
         DispatchQueue.main.async {
-            self.audioPlayer?.stop()
-            self.audioPlayer = nil
-            self.audioDelegate = nil
-            self.isAudioPlaying = false
+            audioPlayer?.stop()
+            audioPlayer = nil
+            audioDelegate = nil
+            isAudioPlaying = false
+            isAudioPaused = false
         }
-    }
-    
-    private func getAudio(at path: String) -> URL? {
-        return URL(fileURLWithPath: path)
     }
     
     private func handleAudioFinished() {
         DispatchQueue.main.async {
-            self.isAudioPlaying = false
-            //print(self.currentPageIndex)
-            if self.currentPageIndex < self.pages.count - 1 {
+            isAudioPlaying = false
+            
+            if currentPageIndex < pages.count - 1 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    self.goToNextPage()
+                    goToNextPage()
                 }
-            } else if currentPageIndex == pages.count - 1 {
+            } else {
+                // Last page - exit audio mode
                 DispatchQueue.global(qos: .userInteractive).async {
                     stopAudio()
                 }
@@ -417,8 +424,12 @@ struct PagesView: View {
     
     private func handleAudioStarted() {
         DispatchQueue.main.async {
-            self.isAudioPlaying = true
+            isAudioPlaying = true
         }
+    }
+    
+    private func getAudio(at path: String) -> URL? {
+        URL(fileURLWithPath: path)
     }
     
     private func getImage(at path: String) -> UIImage? {
@@ -426,7 +437,6 @@ struct PagesView: View {
             print("Image not found at path: \(path)")
             return nil
         }
-        
         return UIImage(contentsOfFile: path)
     }
 }

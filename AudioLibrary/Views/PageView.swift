@@ -53,7 +53,7 @@ struct PageView: View {
         ZStack {
             ZStack {
                 if let bgImage = img {
-                    GeometryReader { geo in
+                    GeometryReader { _ in
                         bgImage
                             .resizable()
                             .aspectRatio(contentMode: .fill)

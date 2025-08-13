@@ -23,11 +23,11 @@ struct LibraryContainerView: View {
             }
         }
         .animation(.easeInOut(duration: 0.4), value: readyToShowPages)
-        .onChange(of: selectedPages) { newValue in
-            readyToShowPages = (newValue?.isEmpty == false)
+        .onChange(of: selectedPages) {
+            readyToShowPages = (selectedPages?.isEmpty == false)
         }
-        .onChange(of: clickedHomeButton) { newValue in
-            if newValue {
+        .onChange(of: clickedHomeButton) {
+            if clickedHomeButton {
                 selectedPages = nil
                 readyToShowPages = false
                 clickedHomeButton = false
