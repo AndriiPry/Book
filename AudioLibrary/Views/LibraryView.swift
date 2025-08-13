@@ -41,6 +41,9 @@ struct LibraryView: View {
             loadBooks()
             updateOrientation()
         }
+        .onChange(of: language) {
+            loadBooks()
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             updateOrientation()
         }

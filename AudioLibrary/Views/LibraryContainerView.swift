@@ -12,15 +12,31 @@ struct LibraryContainerView: View {
     @State private var readyToShowPages = false
     @State private var clickedHomeButton = false
     @State private var language: String = "ua"
+    private var availableLanguages: [String] = ["ua", "en"]
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             if readyToShowPages, let sp = selectedPages {
                 PagesView(pages: sp, clickedHomeButton: $clickedHomeButton)
                     .transition(.opacity)
             } else {
                 LibraryView(selectedPages: $selectedPages, language: $language)
                     .transition(.opacity)
+            }
+
+            Menu {
+                ForEach(availableLanguages, id: \.self) { lang in
+                    Button(action: { language = lang }) {
+                        Text(languageName(for: lang))
+                    }
+                }
+            } label: {
+                Label(language.uppercased(), systemImage: "globe")
+                    .padding(8)
+                    .background(Color.black.opacity(0.6))
+                    .foregroundColor(.white)
+                    .clipShape(Capsule())
+                    .padding()
             }
         }
         .animation(.easeInOut(duration: 0.4), value: readyToShowPages)
@@ -35,8 +51,15 @@ struct LibraryContainerView: View {
             }
         }
     }
-}
 
+    private func languageName(for code: String) -> String {
+        switch code {
+        case "ua": return "Українська"
+        case "en": return "English"
+        default: return code
+        }
+    }
+}
 
 #Preview(traits: .landscapeRight) {
     LibraryContainerView()

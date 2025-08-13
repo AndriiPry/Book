@@ -85,7 +85,15 @@ class LibraryFileManager {
         }
     }
     
-    private func loadPages(fromBookPath bookPath: String, pageCount: Int, _ lang: String) -> [Page] {
+    private func loadPages(fromBookPath bookPath: String, pageCount: Int, _ lang: String, showLogs: Bool = false) -> [Page] {
+        if showLogs {
+            return loadPagesWithLogs(fromBookPath: bookPath, pageCount: pageCount, lang)
+        } else {
+            return loadPagesNoLogs(fromBookPath: bookPath, pageCount: pageCount, lang)
+        }
+    }
+
+    private func loadPagesWithLogs(fromBookPath bookPath: String, pageCount: Int, _ lang: String) -> [Page] {
         var pages: [Page] = []
         let pagesPath = (bookPath as NSString).appendingPathComponent(Constants.pagesDirectoryName)
         
@@ -127,6 +135,35 @@ class LibraryFileManager {
         }
         
         print("\n📖 Finished loading pages. Total loaded: \(pages.count)/\(pageCount)")
+        return pages
+    }
+
+    private func loadPagesNoLogs(fromBookPath bookPath: String, pageCount: Int, _ lang: String) -> [Page] {
+        var pages: [Page] = []
+        let pagesPath = (bookPath as NSString).appendingPathComponent(Constants.pagesDirectoryName)
+        
+        for pageNumber in 1...pageCount {
+            let pagePath = (pagesPath as NSString).appendingPathComponent("\(pageNumber)")
+            let pageImagePath = (pagePath as NSString).appendingPathComponent(Constants.backgroundImageName)
+            
+            let langsPath = (pagePath as NSString).appendingPathComponent(Constants.langDirName)
+            let langPath = (langsPath as NSString).appendingPathComponent(lang)
+            
+            let textPath = (langPath as NSString).appendingPathComponent(Constants.textFileName)
+            guard let text = try? String(contentsOfFile: textPath, encoding: .utf8) else {
+                continue
+            }
+            
+            let audioPath = (langPath as NSString).appendingPathComponent(Constants.audioFileName)
+            
+            pages.append(Page(
+                pageNumber: pageNumber,
+                text: text,
+                bgImagePath: pageImagePath,
+                audioPath: audioPath
+            ))
+        }
+        
         return pages
     }
 
