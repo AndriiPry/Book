@@ -96,7 +96,8 @@ struct PageView: View {
                         .lineLimit(3)
                         .frame(
                             width: (geometry.size.width * Constants.textBlockWidthRatio - (Constants.textPadding * 2)) * 0.9,
-                            height: Constants.textBlockHeight - (Constants.textPadding * 2) + 10
+                            height: Constants.textBlockHeight - (Constants.textPadding * 2) + 10,
+                            alignment: .center
                         )
                         .offset(y: textYOFFset)
                         
