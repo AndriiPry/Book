@@ -65,7 +65,6 @@ struct LibraryContainerView: View {
     }
 }
 
-
 #Preview(traits: .landscapeRight) {
     LibraryContainerView()
 }

@@ -150,9 +150,10 @@ class LibraryFileManager {
             let langPath = (langsPath as NSString).appendingPathComponent(lang)
             
             let textPath = (langPath as NSString).appendingPathComponent(Constants.textFileName)
-            guard let text = try? String(contentsOfFile: textPath, encoding: .utf8) else {
+            guard var text = try? String(contentsOfFile: textPath, encoding: .utf8) else {
                 continue
             }
+            text = text.replacingOccurrences(of: "\n", with: " ") //
             
             let audioPath = (langPath as NSString).appendingPathComponent(Constants.audioFileName)
             
