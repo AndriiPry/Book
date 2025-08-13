@@ -13,6 +13,7 @@ struct LibraryView: View {
     @Binding var selectedPages: [Page]?
     @State private var tappedBookId: UUID? = nil
     @State private var isPortrait = true
+    @Binding var language: String
     
     private var spacing: CGFloat {
         switch UIDevice.current.userInterfaceIdiom {
@@ -33,47 +34,8 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.1, green: 0.2, blue: 0.4),
-                    Color(red: 0.2, green: 0.3, blue: 0.6),
-                    Color(red: 0.3, green: 0.4, blue: 0.7)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            ScrollView {
-                let rows = chunkedBooks()
-
-                VStack(spacing: spacing) {
-                    ForEach(rows.indices, id: \.self) { rowIndex in
-                        HStack(spacing: spacing) {
-                            let row = rows[rowIndex]
-                            ForEach(row, id: \.id) { book in
-                                BookCoverView(book: book, isPortrait: $isPortrait)
-                                    .scaleEffect(tappedBookId == book.id ? 0.95 : 1.0)
-                                    .opacity(tappedBookId == book.id ? 0.7 : 1.0)
-                                    .animation(.easeInOut(duration: 0.15), value: tappedBookId)
-                                    .onTapGesture {
-                                        tappedBookId = book.id
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                            tappedBookId = nil
-                                            selectedPages = book.pages
-                                        }
-                                    }
-                            }
-                            if row.count < 3 {
-                                ForEach(0..<(3 - row.count), id: \.self) { _ in
-                                    Color.clear.frame(width: coverWidth)
-                                }
-                            }
-                        }
-                    }
-                }
-                .padding(spacing)
-            }
+            backgroundGradient()
+            contentScrollView()
         }
         .onAppear {
             loadBooks()
@@ -84,8 +46,60 @@ struct LibraryView: View {
         }
     }
 
+    private func backgroundGradient() -> some View {
+        LinearGradient(
+            colors: [
+                Color(red: 0.1, green: 0.2, blue: 0.4),
+                Color(red: 0.2, green: 0.3, blue: 0.6),
+                Color(red: 0.3, green: 0.4, blue: 0.7)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private func contentScrollView() -> some View {
+        ScrollView {
+            let rows = chunkedBooks()
+            VStack(spacing: spacing) {
+                ForEach(rows.indices, id: \.self) { rowIndex in
+                    bookRowView(row: rows[rowIndex])
+                }
+            }
+            .padding(spacing)
+        }
+    }
+
+    private func bookRowView(row: [Book]) -> some View {
+        HStack(spacing: spacing) {
+            ForEach(row, id: \.id) { book in
+                bookCover(book)
+            }
+            if row.count < 3 {
+                ForEach(0..<(3 - row.count), id: \.self) { _ in
+                    Color.clear.frame(width: coverWidth)
+                }
+            }
+        }
+    }
+
+    private func bookCover(_ book: Book) -> some View {
+        BookCoverView(book: book, isPortrait: $isPortrait, language: $language)
+            .scaleEffect(tappedBookId == book.id ? 0.95 : 1.0)
+            .opacity(tappedBookId == book.id ? 0.7 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: tappedBookId)
+            .onTapGesture {
+                tappedBookId = book.id
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    tappedBookId = nil
+                    selectedPages = book.pages
+                }
+            }
+    }
+
     private func loadBooks() {
-        books = libM.getAllBooks()
+        books = libM.getAllBooks(language)
     }
     
     private func updateOrientation() {
@@ -103,8 +117,9 @@ struct LibraryView: View {
 
 struct LibraryView_Previews: PreviewProvider {
     @State static var sp: [Page]?
+    @State static var l: String = "ua"
     static var previews: some View {
-      LibraryView(selectedPages: $sp)
-            //.previewInterfaceOrientation(.landscapeRight)
+      LibraryView(selectedPages: $sp, language: $l)
+            .previewInterfaceOrientation(.landscapeRight)
     }
 }

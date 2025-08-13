@@ -14,43 +14,46 @@ class LibraryFileManager {
     private let fileManager = FileManager.default
     private let resourcePath = Bundle.main.resourcePath ?? ""
     
+    // will download downloaded to DOCUMENTS
+    
     private enum Constants {
         static let booksPath = "AppResources/Books"
         static let defaultBooksPath = "AppResources/Books/Default"
-        static let downloadedBooksPath = "AppResources/Books/Downloaded" // will download downloaded to DOCUMENTS. Placeholder
+        static let downloadedBooksPath = "AppResources/Books/Downloaded" // MARK: PLACEHOLDER
         static let coverImageName = "coverImage.jpg"
         static let metadataFileName = "metadata.json"
         static let pagesDirectoryName = "Pages"
         static let textFileName = "text.txt"
         static let audioFileName = "audio.mp3"
         static let backgroundImageName = "bgImage.jpg"
+        static let langDirName = "lang"
     }
     
     private init() {}
     
     // MARK: - Book Loading Methods
     
-    func getAllBooks() -> [Book] {
-        return getDefaultBooks() + getDownloadedBooks()
+    func getAllBooks(_ lang: String) -> [Book] {
+        return getDefaultBooks(lang) + getDownloadedBooks(lang)
     }
     
-    func getDefaultBooks() -> [Book] {
+    func getDefaultBooks(_ lang: String) -> [Book] {
         let defaultBooksPath = (resourcePath as NSString).appendingPathComponent(Constants.defaultBooksPath)
-        return loadBooksFromDirectory(defaultBooksPath, type: .default)
+        return loadBooksFromDirectory(defaultBooksPath, type: .default, lang)
     }
     
-    func getDownloadedBooks() -> [Book] { // PLACEHOLDER
+    func getDownloadedBooks(_ lang: String) -> [Book] { // PLACEHOLDER
         return []
     }
     
     func getBook(named bookName: String) -> Book? {
         let normalizedName = convertToDirectoryName(bookName)
-        return getAllBooks().first { convertToDirectoryName($0.metadata.name) == normalizedName }
+        return getAllBooks("en").first { convertToDirectoryName($0.metadata.name["en"] ?? "") == normalizedName }
     }
     
     // MARK: - Private Helper Methods
     
-    private func loadBooksFromDirectory(_ directoryPath: String, type: BookType) -> [Book] {
+    private func loadBooksFromDirectory(_ directoryPath: String, type: BookType, _ lang: String) -> [Book] {
         guard let bookDirectories = try? fileManager.contentsOfDirectory(atPath: directoryPath) else {
             return []
         }
@@ -75,35 +78,62 @@ class LibraryFileManager {
                 return nil
             }
             
-            let pages = loadPages(fromBookPath: bookPath, pageCount: metadata.pageCount)
+            let pages = loadPages(fromBookPath: bookPath, pageCount: metadata.pageCount, lang)
             //print(pages)
             let coverImagePath = (bookPath as NSString).appendingPathComponent(Constants.coverImageName)
             return Book(pages: pages, metadata: metadata, coverImagePath: coverImagePath)
         }
     }
     
-    private func loadPages(fromBookPath bookPath: String, pageCount: Int) -> [Page] {
+    private func loadPages(fromBookPath bookPath: String, pageCount: Int, _ lang: String) -> [Page] {
         var pages: [Page] = []
         let pagesPath = (bookPath as NSString).appendingPathComponent(Constants.pagesDirectoryName)
         
+        print("📚 Starting to load \(pageCount) pages from book path: \(bookPath)")
+        print("   Pages directory: \(pagesPath)")
+        
         for pageNumber in 1...pageCount {
+            print("\n🔹 Loading page \(pageNumber)...")
+            
             let pagePath = (pagesPath as NSString).appendingPathComponent("\(pageNumber)")
-            let textPath = (pagePath as NSString).appendingPathComponent(Constants.textFileName)
+            print("   Page directory: \(pagePath)")
+            
+            let pageImagePath = (pagePath as NSString).appendingPathComponent(Constants.backgroundImageName)
+            print("   Background image path: \(pageImagePath)")
+            
+            let langsPath = (pagePath as NSString).appendingPathComponent(Constants.langDirName)
+            let langPath = (langsPath as NSString).appendingPathComponent(lang)
+            print("   Language directory: \(langPath)")
+            
+            let textPath = (langPath as NSString).appendingPathComponent(Constants.textFileName)
+            print("   Text file path: \(textPath)")
             
             guard let text = try? String(contentsOfFile: textPath, encoding: .utf8) else {
+                print("   ⚠️ Could not load text for page \(pageNumber) — skipping.")
                 continue
             }
-            let pageImagePath = (pagePath as NSString).appendingPathComponent(Constants.backgroundImageName)
-            let audioPath = (pagePath as NSString).appendingPathComponent(Constants.audioFileName)
-            pages.append(Page(pageNumber: pageNumber, text: text, bgImagePath: pageImagePath, audioPath: audioPath))
+            print("   ✅ Loaded text for page \(pageNumber) (\(text.count) characters).")
+            
+            let audioPath = (langPath as NSString).appendingPathComponent(Constants.audioFileName)
+            print("   Audio file path: \(audioPath)")
+            
+            pages.append(Page(
+                pageNumber: pageNumber,
+                text: text,
+                bgImagePath: pageImagePath,
+                audioPath: audioPath
+            ))
+            print("   ✅ Page \(pageNumber) added to the list.")
         }
         
+        print("\n📖 Finished loading pages. Total loaded: \(pages.count)/\(pageCount)")
         return pages
     }
+
     
     private func getBookPath(for book: Book) -> String {
         let typePath = book.bookType == .default ? Constants.defaultBooksPath : Constants.downloadedBooksPath
-        let dirName = convertToDirectoryName(book.metadata.name)
+        let dirName = convertToDirectoryName(book.metadata.name["en"] ?? "")
         return (typePath as NSString).appendingPathComponent(dirName)
     }
     

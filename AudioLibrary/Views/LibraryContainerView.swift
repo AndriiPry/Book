@@ -11,6 +11,7 @@ struct LibraryContainerView: View {
     @State private var selectedPages: [Page]?
     @State private var readyToShowPages = false
     @State private var clickedHomeButton = false
+    @State private var language: String = "ua"
 
     var body: some View {
         ZStack {
@@ -18,7 +19,7 @@ struct LibraryContainerView: View {
                 PagesView(pages: sp, clickedHomeButton: $clickedHomeButton)
                     .transition(.opacity)
             } else {
-                LibraryView(selectedPages: $selectedPages)
+                LibraryView(selectedPages: $selectedPages, language: $language)
                     .transition(.opacity)
             }
         }
