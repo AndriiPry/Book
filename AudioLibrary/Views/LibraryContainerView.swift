@@ -11,7 +11,7 @@ struct LibraryContainerView: View {
     @State private var selectedPages: [Page]?
     @State private var readyToShowPages = false
     @State private var clickedHomeButton = false
-    @State private var language: String = "ua"
+    @State private var language: String = UserDefaults.standard.string(forKey: "selectedLanguage") ?? "ua"
     private var availableLanguages: [String] = ["ua", "en"]
 
     var body: some View {
@@ -23,25 +23,29 @@ struct LibraryContainerView: View {
                 LibraryView(selectedPages: $selectedPages, language: $language)
                     .transition(.opacity)
             }
-
-            Menu {
-                ForEach(availableLanguages, id: \.self) { lang in
-                    Button(action: { language = lang }) {
-                        Text(languageName(for: lang))
+            if selectedPages == nil {
+                Menu {
+                    ForEach(availableLanguages, id: \.self) { lang in
+                        Button(action: { language = lang }) {
+                            Text(languageName(for: lang))
+                        }
                     }
-                }
-            } label: {
-                Label(language.uppercased(), systemImage: "globe")
-                    .padding(8)
-                    .background(Color.black.opacity(0.6))
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
-                    .padding()
+                } label: {
+                    Label(language.uppercased(), systemImage: "globe")
+                        .padding(8)
+                        .background(Color.black.opacity(0.6))
+                        .foregroundColor(.white)
+                        .clipShape(Capsule())
+                        .padding()
+                }.transition(.opacity)
             }
         }
         .animation(.easeInOut(duration: 0.4), value: readyToShowPages)
         .onChange(of: selectedPages) {
             readyToShowPages = (selectedPages?.isEmpty == false)
+        }
+        .onChange(of: language) {
+            UserDefaults.standard.set(language, forKey: "selectedLanguage")
         }
         .onChange(of: clickedHomeButton) {
             if clickedHomeButton {
@@ -60,6 +64,7 @@ struct LibraryContainerView: View {
         }
     }
 }
+
 
 #Preview(traits: .landscapeRight) {
     LibraryContainerView()
