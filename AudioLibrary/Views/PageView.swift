@@ -12,6 +12,7 @@ struct PageView: View {
     let geometry: GeometryProxy
     let offset: CGFloat
     let img: Image?
+    @Binding var isPortrait: Bool
     
     private enum Constants {
         static let textPadding: CGFloat = 20
@@ -31,7 +32,7 @@ struct PageView: View {
     }
     
     var textYOFFset: CGFloat {
-        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -8
+        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -6
     }
     
     var body: some View {
@@ -70,7 +71,7 @@ struct PageView: View {
                         .frame(
                             width: geometry.size.width * Constants.textBlockWidthRatio * 0.9
                         )
-                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : 0.85))
+                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 0.95 : 0.85)))
                         .padding(.vertical, Constants.textPadding)
                     
                     Text(page.text)
@@ -81,7 +82,7 @@ struct PageView: View {
                             width: (geometry.size.width * Constants.textBlockWidthRatio - (Constants.textPadding * 2)) * 0.9,
                             alignment: .center
                         )
-                        .lineLimit(nil)
+                        .lineLimit(4) //
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.vertical, Constants.textPadding)
                         .offset(y: textYOFFset)

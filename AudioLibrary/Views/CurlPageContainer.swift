@@ -202,7 +202,8 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
                         page: page,
                         geometry: geometry,
                         offset: 0,
-                        img: self.imageForPage(page.pageNumber)
+                        img: self.imageForPage(page.pageNumber),
+                        isPortrait: self.$isPortrait
                     )
                 }
             )
@@ -427,7 +428,8 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
                     page: page,
                     geometry: geometry,
                     offset: 0,
-                    img: self.imageForPage(page.pageNumber)
+                    img: self.imageForPage(page.pageNumber),
+                    isPortrait: self.$isPortrait
                 )
             }
         )

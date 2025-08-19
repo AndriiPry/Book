@@ -78,10 +78,10 @@ struct LibraryContainerView: View {
     }
 }
 
-//#Preview(traits: .landscapeRight) {
-//    LibraryContainerView()
-//}
-
-#Preview {
+#Preview(traits: .landscapeRight) {
     LibraryContainerView()
 }
+
+//#Preview {
+//    LibraryContainerView()
+//}
