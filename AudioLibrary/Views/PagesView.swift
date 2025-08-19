@@ -17,6 +17,7 @@ struct PagesView: View {
     @Binding var clickedHomeButton: Bool
     
     @State var curlPageContainer: CurlPageContainer? = nil
+    @Binding var isPortrait: Bool
     
     private enum Constants {
         static let buttonBackgroundOpacity: Double = 0.8
@@ -24,9 +25,10 @@ struct PagesView: View {
         static let strokeWidth: CGFloat = 1
     }
     
-    init(pages: [Page], clickedHomeButton: Binding<Bool>) {
+    init(pages: [Page], clickedHomeButton: Binding<Bool>, _ p: Binding<Bool>) {
         self.pages = pages
         self._clickedHomeButton = clickedHomeButton
+        self._isPortrait = p
     }
     
     // MARK: - Device-specific properties
@@ -130,7 +132,8 @@ struct PagesView: View {
                 currentIndex: $currentPageIndex,
                 isAudioMode: $isAudioMode,
                 isAudioPaused: $isAudioPaused,
-                isAudioPlaying: $isAudioPlaying
+                isAudioPlaying: $isAudioPlaying,
+                isPortrait: $isPortrait
             )
         }
     }
@@ -167,10 +170,11 @@ struct PagesView_Previews: PreviewProvider {
     @State static var sb: Book?
     @State static var ch: Bool = false
     static let libM: LibraryFileManager = .shared
+    @State static var p: Bool = true
     static var previews: some View {
-        if let book = libM.getBook(named: "The Rabbit and the Computer") {
-            PagesView(pages: book.pages, clickedHomeButton: $ch)
-                .previewInterfaceOrientation(.landscapeRight)
+        if let book = libM.getBook(named: "The Singing Bird") {
+            PagesView(pages: book.pages, clickedHomeButton: $ch, $p)
+                //.previewInterfaceOrientation(.landscapeRight)
         } else {
             Text("Book not found")
         }

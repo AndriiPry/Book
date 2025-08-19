@@ -28,7 +28,7 @@ struct LibraryView: View {
         case .pad:
             return isPortrait ? 220 : 320
         default:
-            return 220
+            return isPortrait ? 320 : 220
         }
     }
 
@@ -79,12 +79,13 @@ struct LibraryView: View {
             ForEach(row, id: \.id) { book in
                 bookCover(book)
             }
-            if row.count < 3 {
+            if !isPortrait && row.count < 3 {
                 ForEach(0..<(3 - row.count), id: \.self) { _ in
                     Color.clear.frame(width: coverWidth)
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private func bookCover(_ book: Book) -> some View {
@@ -108,12 +109,12 @@ struct LibraryView: View {
     private func updateOrientation() {
         guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
         self.isPortrait = scene.interfaceOrientation.isPortrait
-        //print(isPortrait)
     }
 
     private func chunkedBooks() -> [[Book]] {
-        stride(from: 0, to: books.count, by: 3).map {
-            Array(books[$0..<min($0 + 3, books.count)])
+        let booksPerRow = isPortrait ? 1 : 3
+        return stride(from: 0, to: books.count, by: booksPerRow).map {
+            Array(books[$0..<min($0 + booksPerRow, books.count)])
         }
     }
 }
@@ -123,6 +124,6 @@ struct LibraryView_Previews: PreviewProvider {
     @State static var l: String = "ua"
     static var previews: some View {
       LibraryView(selectedPages: $sp, language: $l)
-            .previewInterfaceOrientation(.landscapeRight)
+            //.previewInterfaceOrientation(.landscapeRight)
     }
 }

@@ -13,11 +13,13 @@ struct LibraryContainerView: View {
     @State private var clickedHomeButton = false
     @State private var language: String = UserDefaults.standard.string(forKey: "selectedLanguage") ?? "ua"
     private var availableLanguages: [String] = ["ua", "en"]
+    
+    @State private var isPortrait = true
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             if readyToShowPages, let sp = selectedPages {
-                PagesView(pages: sp, clickedHomeButton: $clickedHomeButton)
+                PagesView(pages: sp, clickedHomeButton: $clickedHomeButton, $isPortrait)
                     .transition(.opacity)
             } else {
                 LibraryView(selectedPages: $selectedPages, language: $language)
@@ -54,6 +56,12 @@ struct LibraryContainerView: View {
                 clickedHomeButton = false
             }
         }
+        .onAppear() {
+            updateOrientation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            updateOrientation()
+        }
     }
 
     private func languageName(for code: String) -> String {
@@ -63,8 +71,17 @@ struct LibraryContainerView: View {
         default: return code
         }
     }
+    
+    private func updateOrientation() {
+        guard let scene = UIApplication.shared.windows.first?.windowScene else { return }
+        self.isPortrait = scene.interfaceOrientation.isPortrait
+    }
 }
 
-#Preview(traits: .landscapeRight) {
+//#Preview(traits: .landscapeRight) {
+//    LibraryContainerView()
+//}
+
+#Preview {
     LibraryContainerView()
 }

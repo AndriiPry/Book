@@ -16,6 +16,8 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
 
     private var arrowLeftButton: UIButton!
     private var arrowRightButton: UIButton!
+    private var arrowLeftBottomConstraint: NSLayoutConstraint!
+    private var arrowRightBottomConstraint: NSLayoutConstraint!
 
     // Audio properties
     private var audioPlayer: AVAudioPlayer?
@@ -29,6 +31,8 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
     private enum Constants {
         static let preloadRange: Int = 2
         static let animationDuration: TimeInterval = 0.8
+        static let arrowButtonBottomOffset: CGFloat = -20
+        static let arrowButtonBottomOffsetIPhonePortrait: CGFloat = -100
     }
     
     // Bindings to SwiftUI
@@ -36,6 +40,7 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
     var onAudioModeChange: ((Bool) -> Void)?
     var onAudioPausedChange: ((Bool) -> Void)?
     var onAudioPlayingChange: ((Bool) -> Void)?
+    @Binding var isPortrait: Bool
 
     private(set) var currentIndex: Int = 0 {
         didSet {
@@ -71,9 +76,10 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
         }
     }
 
-    init(pages: [Page], initialIndex: Int = 0) {
+    init(pages: [Page], initialIndex: Int = 0, _ p: Binding<Bool>) {
         self.pages = pages
         self.currentIndex = min(max(0, initialIndex), max(0, pages.count - 1))
+        self._isPortrait = p
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -119,11 +125,25 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
         arrowLeftButton.translatesAutoresizingMaskIntoConstraints = false
         arrowRightButton.translatesAutoresizingMaskIntoConstraints = false
 
+        // Set initial bottom offset
+        let bottomOffset = UIDevice.current.userInterfaceIdiom == .phone && isPortrait
+            ? Constants.arrowButtonBottomOffsetIPhonePortrait
+            : Constants.arrowButtonBottomOffset
+
+        arrowLeftBottomConstraint = arrowLeftButton.bottomAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+            constant: bottomOffset
+        )
+        arrowRightBottomConstraint = arrowRightButton.bottomAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+            constant: bottomOffset
+        )
+
         NSLayoutConstraint.activate([
             arrowLeftButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            arrowLeftButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            arrowLeftBottomConstraint,
             arrowRightButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            arrowRightButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+            arrowRightBottomConstraint
         ])
 
         updateArrowButtons()
@@ -153,6 +173,22 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
         arrowLeftButton.alpha = currentIndex > 0 ? 1.0 : 0.3
         arrowRightButton.isEnabled = currentIndex < pages.count - 1
         arrowRightButton.alpha = currentIndex < pages.count - 1 ? 1.0 : 0.3
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        // Update bottom constraints on orientation change
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            guard let self = self else { return }
+            let bottomOffset = UIDevice.current.userInterfaceIdiom == .phone && self.isPortrait
+                ? Constants.arrowButtonBottomOffsetIPhonePortrait
+                : Constants.arrowButtonBottomOffset
+            
+            self.arrowLeftBottomConstraint.constant = bottomOffset
+            self.arrowRightBottomConstraint.constant = bottomOffset
+            self.view.layoutIfNeeded()
+        }, completion: nil)
     }
 
     @objc public func didTapPrevious() { goToPreviousPage() }
@@ -464,6 +500,7 @@ struct CurlPageContainer: UIViewControllerRepresentable {
     @Binding var isAudioMode: Bool
     @Binding var isAudioPaused: Bool
     @Binding var isAudioPlaying: Bool
+    @Binding var isPortrait: Bool
 
     final class Coordinator {
             weak var controller: CurlPagesViewController?
@@ -474,7 +511,7 @@ struct CurlPageContainer: UIViewControllerRepresentable {
     func makeCoordinator() -> Coordinator { coordinator }
 
     func makeUIViewController(context: Context) -> CurlPagesViewController {
-        let vc = CurlPagesViewController(pages: pages, initialIndex: currentIndex)
+        let vc = CurlPagesViewController(pages: pages, initialIndex: currentIndex, $isPortrait)
 
         vc.onIndexChange = { newIndex in
             if currentIndex != newIndex {
