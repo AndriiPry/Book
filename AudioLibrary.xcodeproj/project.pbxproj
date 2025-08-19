@@ -24,6 +24,7 @@
 		49424D882E47AF4000293750 /* LibraryContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D872E47AF3B00293750 /* LibraryContainerView.swift */; };
 		49424D8C2E4AE58200293750 /* Asset Catalog.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49424D8B2E4AE58200293750 /* Asset Catalog.xcassets */; };
 		49CB8C8F2E4CC10200B58D55 /* AppResources in Resources */ = {isa = PBXBuildFile; fileRef = 49CB8C8E2E4CC10200B58D55 /* AppResources */; };
+		49CB8CB42E54591700B58D55 /* CurlPageContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		49424D872E47AF3B00293750 /* LibraryContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryContainerView.swift; sourceTree = "<group>"; };
 		49424D8B2E4AE58200293750 /* Asset Catalog.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Asset Catalog.xcassets"; sourceTree = "<group>"; };
 		49CB8C8E2E4CC10200B58D55 /* AppResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AppResources; sourceTree = "<group>"; };
+		49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlPageContainer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 		49424D162E463DEB00293750 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */,
 				49424D872E47AF3B00293750 /* LibraryContainerView.swift */,
 				49424D812E474B3100293750 /* PageView.swift */,
 				49424D7F2E4747C000293750 /* PagesView.swift */,
@@ -178,6 +181,8 @@
 			);
 			mainGroup = 49424CEE2E463D3B00293750;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49424CF82E463D3B00293750 /* Products */;
 			projectDirPath = "";
@@ -208,6 +213,7 @@
 			files = (
 				49424D172E463DEB00293750 /* AudioLibraryApp.swift in Sources */,
 				49424D182E463DEB00293750 /* LibraryFileManager.swift in Sources */,
+				49CB8CB42E54591700B58D55 /* CurlPageContainer.swift in Sources */,
 				49424D862E4790F900293750 /* AudioPlayerDelegate.swift in Sources */,
 				49424D842E47810C00293750 /* UIScreen+size.swift in Sources */,
 				49424D192E463DEB00293750 /* BookCoverView.swift in Sources */,
