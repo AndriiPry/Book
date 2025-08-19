@@ -71,7 +71,7 @@ struct PageView: View {
                         .frame(
                             width: geometry.size.width * Constants.textBlockWidthRatio * 0.9
                         )
-                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 0.95 : 0.85)))
+                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 0.97 : 0.85)))
                         .padding(.vertical, Constants.textPadding)
                     
                     Text(page.text)

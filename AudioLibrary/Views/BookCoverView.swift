@@ -19,7 +19,7 @@ struct BookCoverView: View {
         case .pad:
             return isPortrait ? 20 : 27
         default:
-            if (book.metadata.name[language]?.count ?? 0) < 25 {return 24} else {return 20}
+            if (book.metadata.name[language]?.count ?? 0) < 19 {return 24} else {return 20}
         }
         
     }
@@ -122,7 +122,7 @@ struct BookCoverView: View {
 struct BookCoverView_Previews: PreviewProvider {
     static let libM: LibraryFileManager = .shared
     @State static var p = false
-    @State static var l = "en"
+    @State static var l = "ua"
     static var previews: some View {
         if let book = libM.getBook(named: "The Rabbit and the Computer") {
             BookCoverView(book: book, isPortrait: $p, language: $l)
