@@ -32,10 +32,16 @@ struct LibraryView: View {
         }
     }
 
+    private var rowWidth: CGFloat {
+        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 1 : 3)
+        return CGFloat(booksPerRow) * coverWidth + CGFloat(booksPerRow - 1) * spacing
+    }
+
     var body: some View {
         ZStack {
             backgroundGradient()
             contentScrollView()
+                .padding(.top, 20)
         }
         .onAppear {
             loadBooks()
@@ -70,8 +76,9 @@ struct LibraryView: View {
                     bookRowView(row: rows[rowIndex])
                 }
             }
-            .padding(spacing)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
+        .ignoresSafeArea(.all, edges: .horizontal)
     }
 
     private func bookRowView(row: [Book]) -> some View {
@@ -79,13 +86,8 @@ struct LibraryView: View {
             ForEach(row, id: \.id) { book in
                 bookCover(book)
             }
-            if !isPortrait && row.count < 3 {
-                ForEach(0..<(3 - row.count), id: \.self) { _ in
-                    Color.clear.frame(width: coverWidth)
-                }
-            }
         }
-        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(width: rowWidth, alignment: .leading)
     }
 
     private func bookCover(_ book: Book) -> some View {
@@ -112,7 +114,7 @@ struct LibraryView: View {
     }
 
     private func chunkedBooks() -> [[Book]] {
-        let booksPerRow = isPortrait ? 1 : 3
+        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 1 : 3)
         return stride(from: 0, to: books.count, by: booksPerRow).map {
             Array(books[$0..<min($0 + booksPerRow, books.count)])
         }

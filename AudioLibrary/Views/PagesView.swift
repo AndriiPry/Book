@@ -170,9 +170,11 @@ struct PagesView_Previews: PreviewProvider {
     @State static var sb: Book?
     @State static var ch: Bool = false
     static let libM: LibraryFileManager = .shared
+    //@State static var p: Bool = false
     @State static var p: Bool = true
     static var previews: some View {
-        if let book = libM.getBook(named: "The Singing Bird") {
+        if let book = libM.getBook(named: "The Rabbit and the Computer") {
+//        if let book = libM.getBook(named: "The Singing Bird") {
             PagesView(pages: book.pages, clickedHomeButton: $ch, $p)
                 //.previewInterfaceOrientation(.landscapeRight)
         } else {

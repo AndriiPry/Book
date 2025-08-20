@@ -32,23 +32,25 @@ struct PageView: View {
     }
     
     var textYOFFset: CGFloat {
-        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -6
+        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -5
     }
     
     var body: some View {
         ZStack {
             if let bgImage = img {
-                GeometryReader { _ in
+                GeometryReader { geometry in
                     bgImage
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .scaledToFill() // BEFORE frame
+                        //.offset(y:50)
+                        .frame(
+                            width: geometry.size.width,
+                            height: geometry.size.height,
+                        )
+                        //.clipped()
                         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                        .clipped()
-                        .edgesIgnoringSafeArea(.all)
-                        .scaleEffect(1.3)
                 }
-                .frame(width: geometry.size.width, height: geometry.size.height)
+                .edgesIgnoringSafeArea(.all)
             } else {
                 LinearGradient(
                     colors: [
@@ -71,7 +73,7 @@ struct PageView: View {
                         .frame(
                             width: geometry.size.width * Constants.textBlockWidthRatio * 0.9
                         )
-                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 0.97 : 0.85)))
+                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 1 : 0.75)))
                         .padding(.vertical, Constants.textPadding)
                     
                     Text(page.text)
