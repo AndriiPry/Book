@@ -1,11 +1,17 @@
 {
   "id": null,
-  "name": "The Singing Bird",
-  "author": "Story Author",
+  "name": {
+    "en": "The Singing Bird",
+    "ua": "Співоча пташка"
+  },
+  "author": {
+    "en": "Story Author",
+    "ua": "Автор історії"
+  },
   "ageGroup": "3-5",
-  "language": "en",
   "pageCount": 3,
   "createdDate": "2025-01-15T00:00:00Z",
   "tags": ["animals", "music", "happiness"],
   "bookType": "default"
 }
+

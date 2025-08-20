@@ -1,9 +1,14 @@
 {
   "id": null,
-  "name": "The Wise Deer",
-  "author": "Story Author",
+  "name": {
+    "en": "The Wise Deer",
+    "ua": "Мудрий олень"
+  },
+  "author": {
+    "en": "Story Author",
+    "ua": "Автор історії"
+  },
   "ageGroup": "3-5",
-  "language": "en",
   "pageCount": 3,
   "createdDate": "2025-01-15T00:00:00Z",
   "tags": ["animals", "wisdom", "friendship"],

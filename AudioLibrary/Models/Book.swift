@@ -18,7 +18,7 @@ struct Book: Identifiable, Codable, Equatable {
     }
     
     let id: UUID
-    let pages: [Page]
+    var pages: [Page]
     let metadata: BookMetadata
     let bookType: BookType
     let coverImagePath: String?

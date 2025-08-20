@@ -12,13 +12,14 @@ struct BookCoverView: View {
     @State var coverImage: UIImage = UIImage(systemName: "star.fill")!
     @State var bookThemeColor: Color = Color.black
     @Binding var isPortrait: Bool
+    @Binding var language: String
     
     var titleFontSize: CGFloat {
         switch UIDevice.current.userInterfaceIdiom {
         case .pad:
             return isPortrait ? 20 : 27
         default:
-            if book.metadata.name.count < 18 {return 24} else {return 20}
+            if (book.metadata.name[language]?.count ?? 0) < 19 {return 24} else {return 20}
         }
         
     }
@@ -28,7 +29,7 @@ struct BookCoverView: View {
         case .pad:
             return isPortrait ? 220 : 320
         default:
-            return 220
+            return isPortrait ? 320 : 220
         }
     }
     
@@ -37,7 +38,7 @@ struct BookCoverView: View {
         case .pad:
             return isPortrait ? 250 : 350
         default:
-            return 250
+            return isPortrait ? 320 : 250
         }
     }
     
@@ -80,7 +81,7 @@ struct BookCoverView: View {
                             Rectangle()
                                 .fill(bookThemeColor.opacity(Constants.colorTintOpacity))
                             
-                            Text(book.metadata.name)
+                            Text(book.metadata.name[language] ?? "")
                                 .font(.custom("Avenir-Heavy", size: titleFontSize))
                                 .foregroundStyle(.white)
                                 .padding(.bottom, Constants.titlePadding)
@@ -120,10 +121,11 @@ struct BookCoverView: View {
 
 struct BookCoverView_Previews: PreviewProvider {
     static let libM: LibraryFileManager = .shared
-    @State static var l = false
+    @State static var p = false
+    @State static var l = "ua"
     static var previews: some View {
         if let book = libM.getBook(named: "The Rabbit and the Computer") {
-            BookCoverView(book: book, isPortrait: $l)
+            BookCoverView(book: book, isPortrait: $p, language: $l)
                 .previewInterfaceOrientation(.landscapeRight)
         } else {
             Text("Book not found")

@@ -1,11 +1,16 @@
 {
   "id": null,
-  "name": "The Silly Deer",
-  "author": "Story Author",
+  "name": {
+    "en": "The Silly Deer",
+    "ua": "Смішний олень"
+  },
+  "author": {
+    "en": "Story Author",
+    "ua": "Автор історії"
+  },
   "ageGroup": "3-5",
-  "language": "en",
   "pageCount": 3,
   "createdDate": "2025-01-15T00:00:00Z",
-  "tags": ["animals", "wisdom", "friendship"],
+  "tags": ["animals", "humor", "friendship"],
   "bookType": "default"
 }
