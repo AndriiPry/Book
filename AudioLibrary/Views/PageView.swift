@@ -12,6 +12,7 @@ struct PageView: View {
     let geometry: GeometryProxy
     let offset: CGFloat
     let img: Image?
+    @Binding var isPortrait: Bool
     
     private enum Constants {
         static let textPadding: CGFloat = 20
@@ -31,19 +32,25 @@ struct PageView: View {
     }
     
     var textYOFFset: CGFloat {
-        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -10
+        UIDevice.current.userInterfaceIdiom == .pad ? 4 : -5
     }
     
     var body: some View {
         ZStack {
             if let bgImage = img {
-                GeometryReader { _ in
+                GeometryReader { geometry in
                     bgImage
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .ignoresSafeArea()
-                        .scaledToFill()
+                        .scaledToFill() // BEFORE frame
+                        //.offset(y:50)
+                        .frame(
+                            width: geometry.size.width,
+                            height: geometry.size.height,
+                        )
+                        //.clipped()
+                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 }
+                .edgesIgnoringSafeArea(.all)
             } else {
                 LinearGradient(
                     colors: [
@@ -53,7 +60,7 @@ struct PageView: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
-                .ignoresSafeArea()
+                .edgesIgnoringSafeArea(.all)
             }
             
             VStack {
@@ -64,9 +71,10 @@ struct PageView: View {
                         .fill(Color.white.opacity(Constants.textBackgroundOpacity))
                         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
                         .frame(
-                            width: geometry.size.width * Constants.textBlockWidthRatio * 0.9,
-                            height: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : 0.85)
+                            width: geometry.size.width * Constants.textBlockWidthRatio * 0.9
                         )
+                        .frame(maxHeight: Constants.textBlockHeight * (UIDevice.current.userInterfaceIdiom == .pad ? 1 : (isPortrait ? 1 : 0.75)))
+                        .padding(.vertical, Constants.textPadding)
                     
                     Text(page.text)
                         .font(.system(size: fontSize, weight: .semibold))
@@ -74,17 +82,18 @@ struct PageView: View {
                         .multilineTextAlignment(.center)
                         .frame(
                             width: (geometry.size.width * Constants.textBlockWidthRatio - (Constants.textPadding * 2)) * 0.9,
-                            height: Constants.textBlockHeight - (Constants.textPadding * 2),
                             alignment: .center
                         )
+                        .lineLimit(4) //
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.vertical, Constants.textPadding)
                         .offset(y: textYOFFset)
-                        .clipped() // ensures no overflow without lineLimit
                 }
                 .offset(y: textBlockYOffset)
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .offset(x: offset)
         }
-        .frame(width: geometry.size.width, height: geometry.size.height)
-        .offset(x: offset)
     }
 }
 

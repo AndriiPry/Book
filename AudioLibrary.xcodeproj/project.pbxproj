@@ -24,6 +24,7 @@
 		49424D882E47AF4000293750 /* LibraryContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D872E47AF3B00293750 /* LibraryContainerView.swift */; };
 		49424D8C2E4AE58200293750 /* Asset Catalog.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49424D8B2E4AE58200293750 /* Asset Catalog.xcassets */; };
 		49CB8C8F2E4CC10200B58D55 /* AppResources in Resources */ = {isa = PBXBuildFile; fileRef = 49CB8C8E2E4CC10200B58D55 /* AppResources */; };
+		49CB8CB42E54591700B58D55 /* CurlPageContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		49424D872E47AF3B00293750 /* LibraryContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryContainerView.swift; sourceTree = "<group>"; };
 		49424D8B2E4AE58200293750 /* Asset Catalog.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Asset Catalog.xcassets"; sourceTree = "<group>"; };
 		49CB8C8E2E4CC10200B58D55 /* AppResources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = AppResources; sourceTree = "<group>"; };
+		49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlPageContainer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +116,7 @@
 		49424D162E463DEB00293750 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */,
 				49424D872E47AF3B00293750 /* LibraryContainerView.swift */,
 				49424D812E474B3100293750 /* PageView.swift */,
 				49424D7F2E4747C000293750 /* PagesView.swift */,
@@ -178,6 +181,8 @@
 			);
 			mainGroup = 49424CEE2E463D3B00293750;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49424CF82E463D3B00293750 /* Products */;
 			projectDirPath = "";
@@ -208,6 +213,7 @@
 			files = (
 				49424D172E463DEB00293750 /* AudioLibraryApp.swift in Sources */,
 				49424D182E463DEB00293750 /* LibraryFileManager.swift in Sources */,
+				49CB8CB42E54591700B58D55 /* CurlPageContainer.swift in Sources */,
 				49424D862E4790F900293750 /* AudioPlayerDelegate.swift in Sources */,
 				49424D842E47810C00293750 /* UIScreen+size.swift in Sources */,
 				49424D192E463DEB00293750 /* BookCoverView.swift in Sources */,
@@ -353,7 +359,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = K59CTFXLB4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -363,8 +369,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -384,7 +389,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = K59CTFXLB4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -394,8 +399,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

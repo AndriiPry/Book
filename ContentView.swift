@@ -13,6 +13,10 @@ struct ContentView: View {
     }
 }
 
-#Preview("ContentView", traits: .landscapeRight) {
+//#Preview("ContentView", traits: .landscapeRight) {
+//    ContentView()
+//}
+
+#Preview {
     ContentView()
 }
