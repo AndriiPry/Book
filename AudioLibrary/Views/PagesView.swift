@@ -133,8 +133,14 @@ struct PagesView: View {
                 isAudioMode: $isAudioMode,
                 isAudioPaused: $isAudioPaused,
                 isAudioPlaying: $isAudioPlaying,
-                isPortrait: $isPortrait
+                isPortrait: $isPortrait,
+                clickedHomeButton: $clickedHomeButton
             )
+        }
+        .onDisappear {
+            curlPageContainer = nil
+            pages.removeAll()
+            print("PagesView disappeared, cleared curlPageContainer")
         }
     }
     

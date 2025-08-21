@@ -82,6 +82,10 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
         self._isPortrait = p
         super.init(nibName: nil, bundle: nil)
     }
+    
+    deinit {
+        cleanupAllResources() //
+    }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
@@ -241,6 +245,21 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
         }
     }
     
+    func cleanupAllResources() {
+        pagesImages.removeAll()
+        loadedPageImages.removeAll()
+        isLoadingImages.removeAll()
+        controllers.forEach { $0.willMove(toParent: nil); $0.view.removeFromSuperview(); $0.removeFromParent() }
+        controllers.removeAll()
+        stopAudio()
+        pageController?.dataSource = nil
+        pageController?.delegate = nil
+        pageController?.view.removeFromSuperview()
+        pageController?.removeFromParent()
+        pageController = nil
+        print("CurlPagesViewController deallocated")
+    }
+    
     // MARK: - Audio Functions
     
     public func toggleReadingMode() {
@@ -309,13 +328,13 @@ final class CurlPagesViewController: UIViewController, UIPageViewControllerDataS
     }
     
     private func stopAudio() {
-        DispatchQueue.main.async { [weak self] in
-            self?.audioPlayer?.stop()
-            self?.audioPlayer = nil
-            self?.audioDelegate = nil
-            self?.isAudioPlaying = false
-            self?.isAudioPaused = false
-        }
+        //DispatchQueue.main.async { [weak self] in
+            self.audioPlayer?.stop()
+            self.audioPlayer = nil
+            self.audioDelegate = nil
+            self.isAudioPlaying = false
+            self.isAudioPaused = false
+        //}
     }
     
     private func handleAudioFinished() {
@@ -503,6 +522,7 @@ struct CurlPageContainer: UIViewControllerRepresentable {
     @Binding var isAudioPaused: Bool
     @Binding var isAudioPlaying: Bool
     @Binding var isPortrait: Bool
+    @Binding var clickedHomeButton: Bool
 
     final class Coordinator {
             weak var controller: CurlPagesViewController?
@@ -551,6 +571,11 @@ struct CurlPageContainer: UIViewControllerRepresentable {
 
         if uiViewController.currentIndex != currentIndex {
             uiViewController.setIndex(currentIndex, animated: false)
+        }
+        
+        if clickedHomeButton {
+            uiViewController.cleanupAllResources()
+            context.coordinator.controller = nil
         }
     }
 }
