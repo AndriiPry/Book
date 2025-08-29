@@ -21,7 +21,8 @@ import Foundation
 //  "pageCount": 3,
 //  "createdDate": "2025-01-15T00:00:00Z",
 //  "tags": ["animals", "friendship", "adventure"],
-//  "bookType": "default"
+//  "bookType": "default",
+//  "langs": ["en", "ua"]
 //}
 
 struct BookMetadata: Codable, Equatable {
@@ -32,4 +33,5 @@ struct BookMetadata: Codable, Equatable {
     let pageCount: Int
     let tags: [String]
     let bookType: String
+    let langs: [String]
 }

@@ -1,8 +1,8 @@
 {
   "id": null,
   "name": {
-    "en": "The Rabbit and the Computer",
-    "ua": "Кролик та комп'ютер"
+    "en": "The Rabbit",
+    "ua": "Кролик"
   },
   "author": {
     "en": "Story Author",
@@ -12,5 +12,6 @@
   "pageCount": 3,
   "createdDate": "2025-01-15T00:00:00Z",
   "tags": ["animals", "friendship", "adventure"],
-  "bookType": "default"
+  "bookType": "default",
+  "langs": ["en", "ua"]
 }

@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 struct Book: Identifiable, Codable, Equatable {
     static func == (lhs: Book, rhs: Book) -> Bool {
         return lhs.id == rhs.id &&
@@ -23,7 +22,7 @@ struct Book: Identifiable, Codable, Equatable {
     let bookType: BookType
     let coverImagePath: String?
     
-    init(pages: [Page], metadata: BookMetadata, bookType: BookType = .default, coverImagePath: String? = nil) {
+    init(pages: [Page], metadata: BookMetadata, coverImagePath: String? = nil) {
         if let id = metadata.id {
             self.id = id
         } else {
@@ -31,7 +30,7 @@ struct Book: Identifiable, Codable, Equatable {
         }
         self.pages = pages
         self.metadata = metadata
-        self.bookType = bookType
+        self.bookType = metadata.bookType == "downloaded" ? .downloaded : .default
         self.coverImagePath = coverImagePath
     }
 }

@@ -13,13 +13,14 @@ class LibraryFileManager {
     
     private let fileManager = FileManager.default
     private let resourcePath = Bundle.main.resourcePath ?? ""
+    private let documentsPath =  try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).path
     
-    // will download downloaded to DOCUMENTS
+    private var baseAPIurlString = "https://us-central1-audio-library-services.cloudfunctions.net/api"
     
     private enum Constants {
         static let booksPath = "AppResources/Books"
         static let defaultBooksPath = "AppResources/Books/Default"
-        static let downloadedBooksPath = "AppResources/Books/Downloaded" // MARK: PLACEHOLDER
+        static let downloadedBooksPath = "AppResources/Books/Downloaded"
         static let coverImageName = "coverImage.jpg"
         static let metadataFileName = "metadata.json"
         static let pagesDirectoryName = "Pages"
@@ -27,6 +28,33 @@ class LibraryFileManager {
         static let audioFileName = "audio.mp3"
         static let backgroundImageName = "bgImage.jpg"
         static let langDirName = "lang"
+    }
+    
+    public var downloadedDirectoryExists: Bool {
+        var isDir: ObjCBool = false
+        let exists = fileManager.fileExists(
+            atPath: (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath),
+            isDirectory: &isDir
+        )
+        return exists && isDir.boolValue
+    }
+    
+    public var downloadedDirectoryContentCount: Int {
+        var isDir: ObjCBool = false
+        let exists = fileManager.fileExists(
+            atPath: (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath),
+            isDirectory: &isDir
+        )
+        guard exists && isDir.boolValue else { return 0 }
+        
+        do {
+            let directoryPath = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
+            let contents = try fileManager.contentsOfDirectory(atPath: directoryPath)
+            return contents.count
+        } catch {
+            print("Error reading directory contents: \(error)")
+            return 0
+        }
     }
     
     private init() {}
@@ -38,12 +66,243 @@ class LibraryFileManager {
     }
     
     func getDefaultBooks(_ lang: String) -> [Book] {
+        print("getting default books")
         let defaultBooksPath = (resourcePath as NSString).appendingPathComponent(Constants.defaultBooksPath)
         return loadBooksFromDirectory(defaultBooksPath, type: .default, lang)
     }
+    // MARK: TESTING
+    func getDownloadedBooks(_ lang: String) -> [Book] {
+        print("getting downloaded books")
+        let downloadedBooksPath = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
+        return loadBooksFromDirectory(downloadedBooksPath, type: .downloaded, lang)
+    }
     
-    func getDownloadedBooks(_ lang: String) -> [Book] { // PLACEHOLDER
-        return []
+    func initializeDownloadedDir() async {
+        if downloadedDirectoryExists {
+            print("checking and downloading new book covers")
+            if downloadedDirectoryContentCount > 0 {
+                await checkAndDownloadNewBookCovers()
+            } else {
+                await downloadBookCoversFromStorage()
+            }
+        } else {
+            print("creating downloaded directory")
+            createDownloadedDir()
+            print("download book covers from storage")
+            await downloadBookCoversFromStorage()
+        }
+    }
+    
+    func createDownloadedDir() {
+        let booksDirectory = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
+        let booksDirUrl = URL(filePath: booksDirectory)
+        do {
+            try fileManager.createDirectory(at: booksDirUrl, withIntermediateDirectories: true)
+        } catch {
+            print("could not create directory: \(error)")
+            return
+        }
+    }
+    
+    func checkAndDownloadNewBookCovers() async {
+        // logic to get ids and find if any new (opposed to that in the documents directory)
+        // if newids.count != 0 {await downloadBookCoversFromStorage(ids: newids)}
+        return
+    }
+    
+    func downloadBookCoversFromStorage(ids: [UUID]? = nil) async {
+        guard let url = URL(string: baseAPIurlString+"/api/bookCovers") else {
+            print("invalid api url")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        print("getting book covers from storage...")
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let decodedBooksInfo = try JSONDecoder().decode([StorageBookInfo].self, from: data)
+            
+            await withTaskGroup(of: Void.self) { group in
+                for bookInfo in decodedBooksInfo {
+                    if let idss = ids {
+                        if !idss.contains(bookInfo.id) {
+                            continue
+                        }
+                    }
+                    
+                    group.addTask {
+                        await self.downloadBookCoverToDocuments(bookInfo: bookInfo)
+                    }
+                }
+                
+                // Wait for all downloads to complete
+                for await _ in group {
+                    // Each download completes
+                }
+            }
+            
+            print("✅ All book covers downloaded successfully")
+            
+        } catch {
+            print("error loading covers from storage: \(error)")
+        }
+    }
+    
+    func downloadBookCoverToDocuments(bookInfo: StorageBookInfo) async {
+        let newBookDirectory = (documentsPath as NSString)
+            .appendingPathComponent("\(Constants.downloadedBooksPath)/\(bookInfo.id)")
+        let newBookUrl = URL(filePath: newBookDirectory)
+        print("downloading book cover to documents: \(newBookUrl)")
+        do {
+            try fileManager.createDirectory(at: newBookUrl, withIntermediateDirectories: true)
+            
+            guard let coverImgUrl = URL(string: bookInfo.coverUrlString),
+                  let metadataUrl = URL(string: bookInfo.metadataUrlString) else {
+                print("Invalid cover or metadata URLs");
+                return
+            }
+            
+            // Download cover image
+            var coverRequest = URLRequest(url: coverImgUrl)
+            coverRequest.httpMethod = "GET"
+            coverRequest.timeoutInterval = 10
+            coverRequest.allHTTPHeaderFields = ["accept": "*/*"]
+            
+            let (coverData, _) = try await URLSession.shared.data(for: coverRequest)
+            
+            // Save cover image
+            let coverFileUrl = newBookUrl.appendingPathComponent("coverImage.jpg")
+            try coverData.write(to: coverFileUrl)
+            print("Cover image saved to: \(coverFileUrl.path)")
+            
+            // Download metadata
+            var metadataRequest = URLRequest(url: metadataUrl)
+            metadataRequest.httpMethod = "GET"
+            metadataRequest.timeoutInterval = 10
+            metadataRequest.allHTTPHeaderFields = ["accept": "*/*"]
+            
+            let (metadataData, _) = try await URLSession.shared.data(for: metadataRequest)
+            
+            // Save metadata (assuming it's JSON)
+            let metadataFileUrl = newBookUrl.appendingPathComponent("metadata.json")
+            try metadataData.write(to: metadataFileUrl)
+            
+            print("Metadata saved to: \(metadataFileUrl.path)")
+        } catch {
+            print("Error downloading book data: \(error)")
+        }
+    }
+    
+    func downloadBookFromStorageToDocuments(_ id: UUID, _ pageCount: Int, _ langs: [String]) async -> Void {
+        let urlString = "\(baseAPIurlString)/api/bookPages/\(id.uuidString)"
+        let langsParam = langs.joined(separator: ",")
+        let fullURL = "\(urlString)?pageCount=\(pageCount)&langs=\(langsParam)"
+        print("--------------------------------------------------------------------")
+        print(fullURL)
+        print("--------------------------------------------------------------------")
+        guard let url = URL(string: fullURL) else {
+            print("Invalid API URL: \(fullURL)")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 30
+        request.allHTTPHeaderFields = ["accept": "application/json"]
+        
+        print("Downloading book pages for \(id)...")
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            if let JSONString = String(data: data, encoding: String.Encoding.utf8) {
+               print(JSONString)
+            }
+            let response = try JSONDecoder().decode(BookPagesResponse.self, from: data)
+            
+            guard response.success else {
+                print("Server returned error: \(response.error ?? "Unknown error")")
+                return
+            }
+            
+            print("Got \(response.pages.count) pages URLs for book \(id)")
+            
+            // Create book directory structure
+            let bookDirectory = (documentsPath as NSString)
+                .appendingPathComponent("\(Constants.downloadedBooksPath)/\(id)")
+            let pagesDirectory = (bookDirectory as NSString)
+                .appendingPathComponent(Constants.pagesDirectoryName)
+            
+            try fileManager.createDirectory(atPath: pagesDirectory, withIntermediateDirectories: true)
+            
+            // Download all pages using TaskGroup
+            await withTaskGroup(of: Void.self) { group in
+                for pageUrls in response.pages {
+                    group.addTask {
+                        await self.downloadSinglePage(pageUrls: pageUrls, bookDirectory: bookDirectory, langs: langs)
+                    }
+                }
+                
+                // Wait for all page downloads to complete
+                for await _ in group {
+                    // Each page download completes
+                }
+            }
+            
+            print("All pages downloaded successfully for book \(id)")
+            
+        } catch {
+            print("Error downloading book pages: \(error)")
+        }
+    }
+    
+    private func downloadSinglePage(pageUrls: PageUrls, bookDirectory: String, langs: [String]) async {
+        let pageDirectory = (bookDirectory as NSString)
+            .appendingPathComponent("\(Constants.pagesDirectoryName)/\(pageUrls.pageNumber)")
+        
+        do {
+            try fileManager.createDirectory(atPath: pageDirectory, withIntermediateDirectories: true)
+            
+            // Download background image
+            if let bgImageUrl = URL(string: pageUrls.bgImageUrlString) {
+                let bgImageData = try await URLSession.shared.data(from: bgImageUrl).0
+                let bgImagePath = (pageDirectory as NSString).appendingPathComponent(Constants.backgroundImageName)
+                try bgImageData.write(to: URL(fileURLWithPath: bgImagePath))
+                print("Downloaded background image for page \(pageUrls.pageNumber)")
+            }
+            
+            // Download language-specific content
+            for lang in langs {
+                guard let langUrls = pageUrls.languages[lang] else {
+                    print("No URLs for language \(lang) on page \(pageUrls.pageNumber)")
+                    continue
+                }
+                
+                // Create language directory
+                let langDirectory = (pageDirectory as NSString)
+                    .appendingPathComponent("\(Constants.langDirName)/\(lang)")
+                try fileManager.createDirectory(atPath: langDirectory, withIntermediateDirectories: true)
+                
+                // Download audio file
+                if let audioUrl = URL(string: langUrls.audioUrlString) {
+                    let audioData = try await URLSession.shared.data(from: audioUrl).0
+                    let audioPath = (langDirectory as NSString).appendingPathComponent(Constants.audioFileName)
+                    try audioData.write(to: URL(fileURLWithPath: audioPath))
+                    print("Downloaded audio for page \(pageUrls.pageNumber), language \(lang)")
+                }
+                
+                // Download text file
+                if let textUrl = URL(string: langUrls.textUrlString) {
+                    let textData = try await URLSession.shared.data(from: textUrl).0
+                    let textPath = (langDirectory as NSString).appendingPathComponent(Constants.textFileName)
+                    try textData.write(to: URL(fileURLWithPath: textPath))
+                    print("Downloaded text for page \(pageUrls.pageNumber), language \(lang)")
+                }
+            }
+            
+        } catch {
+            print("Error downloading page \(pageUrls.pageNumber): \(error)")
+        }
     }
     
     func getBook(named bookName: String) -> Book? {
@@ -54,10 +313,12 @@ class LibraryFileManager {
     // MARK: - Private Helper Methods
     
     private func loadBooksFromDirectory(_ directoryPath: String, type: BookType, _ lang: String) -> [Book] {
+        //print("loading books from \(directoryPath)")
         guard let bookDirectories = try? fileManager.contentsOfDirectory(atPath: directoryPath) else {
+            print("no contents for \(directoryPath)")
             return []
         }
-        //print(bookDirectories)
+        print("BOOK DIRECTORIES FOR \(type.rawValue): \(bookDirectories)")
         return bookDirectories.compactMap { bookDirectory -> Book? in
             let bookPath = (directoryPath as NSString).appendingPathComponent(bookDirectory)
             //let bookPathContents = try? fileManager.contentsOfDirectory(atPath: bookPath)
@@ -97,7 +358,7 @@ class LibraryFileManager {
         var pages: [Page] = []
         let pagesPath = (bookPath as NSString).appendingPathComponent(Constants.pagesDirectoryName)
         
-        print("📚 Starting to load \(pageCount) pages from book path: \(bookPath)")
+        print("  Starting to load \(pageCount) pages from book path: \(bookPath)")
         print("   Pages directory: \(pagesPath)")
         
         for pageNumber in 1...pageCount {
@@ -134,7 +395,7 @@ class LibraryFileManager {
             print("   ✅ Page \(pageNumber) added to the list.")
         }
         
-        print("\n📖 Finished loading pages. Total loaded: \(pages.count)/\(pageCount)")
+        print("\n Finished loading pages. Total loaded: \(pages.count)/\(pageCount)")
         return pages
     }
 
@@ -183,5 +444,28 @@ class LibraryFileManager {
     
     private func convertToDirectoryName(_ name: String) -> String {
         return name.replacingOccurrences(of: " ", with: "_")
+    }
+    
+    public func deleteBookPages(id: UUID) {
+        // Only delete pages folder from downloaded books directory
+        let downloadedBooksPath = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
+        let bookDirectory = (downloadedBooksPath as NSString).appendingPathComponent(id.uuidString)
+        let pagesDirectory = (bookDirectory as NSString).appendingPathComponent(Constants.pagesDirectoryName)
+        let pagesUrl = URL(fileURLWithPath: pagesDirectory)
+        
+        // Check if the pages directory exists
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: pagesDirectory, isDirectory: &isDirectory) && isDirectory.boolValue else {
+            print("Pages directory does not exist for book ID: \(id)")
+            return
+        }
+        
+        do {
+            // Remove only the Pages directory and all its contents
+            try fileManager.removeItem(at: pagesUrl)
+            print("Successfully deleted pages for book with ID: \(id)")
+        } catch {
+            print("Error deleting pages for book with ID \(id): \(error)")
+        }
     }
 }

@@ -14,6 +14,7 @@ struct LibraryView: View {
     @State private var tappedBookId: UUID? = nil
     @State private var isPortrait = true
     @Binding var language: String
+    @Binding var isInitializing: Bool
     
     private var spacing: CGFloat {
         switch UIDevice.current.userInterfaceIdiom {
@@ -44,7 +45,8 @@ struct LibraryView: View {
                 .padding(.top, 20)
         }
         .onAppear {
-            loadBooks()
+            //loadBooks()
+            initializeAndLoadBooks()
             updateOrientation()
         }
         .onChange(of: language) {
@@ -91,7 +93,7 @@ struct LibraryView: View {
     }
 
     private func bookCover(_ book: Book) -> some View {
-        BookCoverView(book: book, isPortrait: $isPortrait, language: $language)
+        BookCoverView(book: book, isPortrait: $isPortrait, language: $language, onClickDownload: book.bookType == .downloaded ? libM.downloadBookFromStorageToDocuments : nil,onClickDelete: libM.deleteBookPages, onFinishDownload: loadBooks, onFinishDelete: loadBooks)
             .scaleEffect(tappedBookId == book.id ? 0.95 : 1.0)
             .opacity(tappedBookId == book.id ? 0.7 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: tappedBookId)
@@ -119,13 +121,34 @@ struct LibraryView: View {
             Array(books[$0..<min($0 + booksPerRow, books.count)])
         }
     }
+    
+    private func initializeAndLoadBooks() {
+        Task {
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isInitializing = true
+                }
+            }
+            
+            // Perform initialization
+            await libM.initializeDownloadedDir()
+            
+            await MainActor.run {
+                loadBooks()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isInitializing = false
+                }
+            }
+        }
+    }
 }
 
 struct LibraryView_Previews: PreviewProvider {
     @State static var sp: [Page]?
     @State static var l: String = "ua"
+    @State static var s: Bool = false
     static var previews: some View {
-      LibraryView(selectedPages: $sp, language: $l)
+        LibraryView(selectedPages: $sp, language: $l, isInitializing: $s)
             //.previewInterfaceOrientation(.landscapeRight)
     }
 }

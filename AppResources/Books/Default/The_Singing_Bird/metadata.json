@@ -12,6 +12,7 @@
   "pageCount": 3,
   "createdDate": "2025-01-15T00:00:00Z",
   "tags": ["animals", "music", "happiness"],
-  "bookType": "default"
+  "bookType": "default",
+  "langs": ["en", "ua"]
 }
 
