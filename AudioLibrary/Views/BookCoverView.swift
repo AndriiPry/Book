@@ -20,14 +20,12 @@ struct BookCoverView: View {
     
     var onClickDownload: ((UUID, Int, [String]) async -> Void)? = nil
     var onClickDelete: ((UUID) -> Void)? = nil
-    
-    @State private var isDownloadCompleted: Bool = false
 
     var onFinishDownload: (() -> Void)? = nil
     var onFinishDelete: (() -> Void)? = nil
 
     private var isDownloadedCoverOnly: Bool {
-        return book.bookType == .downloaded && book.pages.isEmpty && !isDownloadCompleted
+        return book.bookType == .downloaded && book.pages.isEmpty
     }
     
     private var isDownloadedWithPages: Bool {
@@ -184,7 +182,6 @@ struct BookCoverView: View {
         .onAppear(perform: {
             coverImage = getImage(at: book.coverImagePath ?? "") ?? UIImage(systemName: "house.fill")!
             setThemeColor()
-            print(book.bookType)
         })
     }
     
@@ -220,7 +217,6 @@ struct BookCoverView: View {
         await MainActor.run {
             withAnimation(.easeInOut(duration: 0.3)) {
                 isDownloading = false
-                isDownloadCompleted = true
                 onFinishDownload?()
             }
             print("Download completed for book: \(book.metadata.name[language] ?? "")")
@@ -237,16 +233,13 @@ struct BookCoverView: View {
         // Call the delete function
         onClickDelete?(book.id)
         
-        // Small delay to show the deletion animation
-        try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
-        
         // Complete the deletion
         await MainActor.run {
             withAnimation(.easeInOut(duration: 0.3)) {
                 isDeleting = false
-                onFinishDelete?()
             }
             print("Deletion completed for book: \(book.metadata.name[language] ?? "")")
+            onFinishDelete?()
         }
     }
     

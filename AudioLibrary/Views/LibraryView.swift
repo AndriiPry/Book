@@ -43,6 +43,10 @@ struct LibraryView: View {
             backgroundGradient()
             contentScrollView()
                 .padding(.top, 20)
+                .refreshable {
+                    await libM.refreshBookCovers()
+                    loadBooks()
+                }
         }
         .onAppear {
             //loadBooks()
@@ -93,7 +97,7 @@ struct LibraryView: View {
     }
 
     private func bookCover(_ book: Book) -> some View {
-        BookCoverView(book: book, isPortrait: $isPortrait, language: $language, onClickDownload: book.bookType == .downloaded ? libM.downloadBookFromStorageToDocuments : nil,onClickDelete: libM.deleteBookPages, onFinishDownload: loadBooks, onFinishDelete: loadBooks)
+        BookCoverView(book: book, isPortrait: $isPortrait, language: $language, onClickDownload: book.bookType == .downloaded ? libM.downloadBookFromStorageToDocuments : nil, onClickDelete: libM.deleteBookPages, onFinishDownload: loadBooks, onFinishDelete: loadBooks)
             .scaleEffect(tappedBookId == book.id ? 0.95 : 1.0)
             .opacity(tappedBookId == book.id ? 0.7 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: tappedBookId)
@@ -130,8 +134,8 @@ struct LibraryView: View {
                 }
             }
             
-            // Perform initialization
-            await libM.initializeDownloadedDir()
+            //await libM.initializeDownloadedDir()
+            await libM.ensureInitialized()
             
             await MainActor.run {
                 loadBooks()

@@ -15,7 +15,11 @@ class LibraryFileManager {
     private let resourcePath = Bundle.main.resourcePath ?? ""
     private let documentsPath =  try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).path
     
-    private var baseAPIurlString = "https://us-central1-audio-library-services.cloudfunctions.net/api"
+    private var isInitialized = false
+    private var initializationTask: Task<Void, Never>?
+    
+    //private var baseAPIurlString = "https://us-central1-audio-library-services.cloudfunctions.net/api"
+    private var baseAPIurlString = "https://us-central1-tomo-books.cloudfunctions.net/api"
     
     private enum Constants {
         static let booksPath = "AppResources/Books"
@@ -77,6 +81,27 @@ class LibraryFileManager {
         return loadBooksFromDirectory(downloadedBooksPath, type: .downloaded, lang)
     }
     
+    func ensureInitialized() async {
+        guard !isInitialized else { return }
+        
+        // If initialization is already in progress, wait for it
+        if let existingTask = initializationTask {
+            await existingTask.value
+            return
+        }
+        
+        // Start initialization
+        initializationTask = Task {
+            await initializeDownloadedDir()
+            await MainActor.run {
+                self.isInitialized = true
+                self.initializationTask = nil
+            }
+        }
+        
+        await initializationTask?.value
+    }
+    
     func initializeDownloadedDir() async {
         if downloadedDirectoryExists {
             print("checking and downloading new book covers")
@@ -104,10 +129,81 @@ class LibraryFileManager {
         }
     }
     
+    func getDownloadedBookIds() -> [UUID] {
+        let downloadedBooksPath = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
+        
+        guard fileManager.fileExists(atPath: downloadedBooksPath) else {
+            print("Downloaded books directory does not exist")
+            return []
+        }
+        
+        do {
+            let contents = try fileManager.contentsOfDirectory(atPath: downloadedBooksPath)
+            let bookIds = contents.compactMap { folderName -> UUID? in
+                return UUID(uuidString: folderName)
+            }
+            print("Found \(bookIds.count) downloaded book IDs")
+            return bookIds
+        } catch {
+            print("Error reading downloaded books directory: \(error)")
+            return []
+        }
+    }
+
     func checkAndDownloadNewBookCovers() async {
-        // logic to get ids and find if any new (opposed to that in the documents directory)
-        // if newids.count != 0 {await downloadBookCoversFromStorage(ids: newids)}
-        return
+        // Get all book IDs from the server
+        guard let url = URL(string: baseAPIurlString + "/api/bookIds") else {
+            print("Invalid API URL for bookIds")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        
+        print("Fetching all book IDs from server...")
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // Debug: Print HTTP status code
+            if let httpResponse = response as? HTTPURLResponse {
+                print("HTTP Status Code: \(httpResponse.statusCode)")
+            }
+            
+            // Debug: Print raw response as string
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("Raw response: \(responseString)")
+            }
+            
+            let decodedResponse = try JSONDecoder().decode(BookIdsResponse.self, from: data)
+            
+            guard decodedResponse.success else {
+                print("Server returned error when fetching book IDs")
+                return
+            }
+            
+            // Convert server book IDs to UUID array
+            let serverBookIds = decodedResponse.bookIds.compactMap { UUID(uuidString: $0) }
+            print("Server has \(serverBookIds.count) book IDs")
+            
+            // Get locally downloaded book IDs
+            let localBookIds = getDownloadedBookIds()
+            print("Local has \(localBookIds.count) book IDs")
+            
+            // Find new book IDs (present on server but not locally)
+            let newBookIds = serverBookIds.filter { !localBookIds.contains($0) }
+            
+            if newBookIds.isEmpty {
+                print("No new book covers to download")
+            } else {
+                print("Found \(newBookIds.count) new book covers to download: \(newBookIds.map { $0.uuidString })")
+                await downloadBookCoversFromStorage(ids: newBookIds)
+            }
+            
+        } catch {
+            print("Error checking for new book covers: \(error)")
+        }
     }
     
     func downloadBookCoversFromStorage(ids: [UUID]? = nil) async {
@@ -115,22 +211,38 @@ class LibraryFileManager {
             print("invalid api url")
             return
         }
+        
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
         request.timeoutInterval = 10
-        print("getting book covers from storage...")
+        
+        // If specific IDs are provided, make a POST request with the IDs
+        if let ids = ids {
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let requestBody = ["bookIds": ids.map { $0.uuidString }]
+            
+            do {
+                request.httpBody = try JSONEncoder().encode(requestBody)
+            } catch {
+                print("error encoding request body: \(error)")
+                return
+            }
+            
+            print("getting book covers for specific IDs from storage...")
+        } else {
+            // Default GET request for all covers
+            request.httpMethod = "GET"
+            print("getting all book covers from storage...")
+        }
+        
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
+            
             let decodedBooksInfo = try JSONDecoder().decode([StorageBookInfo].self, from: data)
             
             await withTaskGroup(of: Void.self) { group in
                 for bookInfo in decodedBooksInfo {
-                    if let idss = ids {
-                        if !idss.contains(bookInfo.id) {
-                            continue
-                        }
-                    }
-                    
                     group.addTask {
                         await self.downloadBookCoverToDocuments(bookInfo: bookInfo)
                     }
@@ -428,7 +540,6 @@ class LibraryFileManager {
         
         return pages
     }
-
     
     private func getBookPath(for book: Book) -> String {
         let typePath = book.bookType == .default ? Constants.defaultBooksPath : Constants.downloadedBooksPath
@@ -467,5 +578,9 @@ class LibraryFileManager {
         } catch {
             print("Error deleting pages for book with ID \(id): \(error)")
         }
+    }
+    
+    func refreshBookCovers() async {
+        await checkAndDownloadNewBookCovers()
     }
 }

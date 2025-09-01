@@ -31,3 +31,9 @@ struct LanguageUrls: Codable {
     let audioUrlString: String
     let textUrlString: String
 }
+
+struct BookIdsResponse: Codable {
+    let success: Bool
+    let count: Int
+    let bookIds: [String]
+}
