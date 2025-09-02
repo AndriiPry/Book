@@ -74,7 +74,7 @@ class LibraryFileManager {
         let defaultBooksPath = (resourcePath as NSString).appendingPathComponent(Constants.defaultBooksPath)
         return loadBooksFromDirectory(defaultBooksPath, type: .default, lang)
     }
-    // MARK: TESTING
+    // MARK: STILL TESTING
     func getDownloadedBooks(_ lang: String) -> [Book] {
         print("getting downloaded books")
         let downloadedBooksPath = (documentsPath as NSString).appendingPathComponent(Constants.downloadedBooksPath)
@@ -191,7 +191,18 @@ class LibraryFileManager {
             let localBookIds = getDownloadedBookIds()
             print("Local has \(localBookIds.count) book IDs")
             
-            // Find new book IDs (present on server but not locally)
+            // NEW: Check for deleted books (present locally but not on server)
+            let deletedBookIds = localBookIds.filter { !serverBookIds.contains($0) }
+            if !deletedBookIds.isEmpty {
+                print("Found \(deletedBookIds.count) books that were deleted from server: \(deletedBookIds.map { $0.uuidString })")
+                
+                // Delete each locally downloaded book that doesn't have pages
+                for bookId in deletedBookIds {
+                    await deleteBookIfNoPages(bookId: bookId)
+                }
+            }
+            
+            // Existing logic for new books
             let newBookIds = serverBookIds.filter { !localBookIds.contains($0) }
             
             if newBookIds.isEmpty {
@@ -203,6 +214,29 @@ class LibraryFileManager {
             
         } catch {
             print("Error checking for new book covers: \(error)")
+        }
+    }
+
+    private func deleteBookIfNoPages(bookId: UUID) async {
+        let bookDirectory = (documentsPath as NSString)
+            .appendingPathComponent("\(Constants.downloadedBooksPath)/\(bookId.uuidString)")
+        
+        // Check if pages directory exists
+        let pagesDirectory = (bookDirectory as NSString)
+            .appendingPathComponent(Constants.pagesDirectoryName)
+        
+        var isDirectory: ObjCBool = false
+        let pagesExist = fileManager.fileExists(atPath: pagesDirectory, isDirectory: &isDirectory) && isDirectory.boolValue
+        
+        if !pagesExist {
+            do {
+                try fileManager.removeItem(atPath: bookDirectory)
+                print("✅ Deleted locally downloaded book \(bookId.uuidString) (no pages found)")
+            } catch {
+                print("❌ Error deleting book \(bookId.uuidString): \(error)")
+            }
+        } else {
+            print("⚠️ Book \(bookId.uuidString) has pages - keeping local copy despite server deletion")
         }
     }
     
