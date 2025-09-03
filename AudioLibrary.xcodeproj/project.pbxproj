@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		493C07532E68378C00FC6C69 /* NavbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493C07522E68378500FC6C69 /* NavbarView.swift */; };
 		49424D0B2E463D7B00293750 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49424D052E463D7B00293750 /* Assets.xcassets */; };
 		49424D172E463DEB00293750 /* AudioLibraryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D0C2E463DEB00293750 /* AudioLibraryApp.swift */; };
 		49424D182E463DEB00293750 /* LibraryFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D132E463DEB00293750 /* LibraryFileManager.swift */; };
@@ -29,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		493C07522E68378500FC6C69 /* NavbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavbarView.swift; sourceTree = "<group>"; };
 		49424CF72E463D3B00293750 /* AudioLibrary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioLibrary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49424D052E463D7B00293750 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49424D0C2E463DEB00293750 /* AudioLibraryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLibraryApp.swift; sourceTree = "<group>"; };
@@ -63,6 +65,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		493C07542E683F0A00FC6C69 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				49424D762E47356E00293750 /* LibraryView.swift */,
+				49424D152E463DEB00293750 /* BookCoverView.swift */,
+				49424D7F2E4747C000293750 /* PagesView.swift */,
+				49424D812E474B3100293750 /* PageView.swift */,
+				49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
 		49424CEE2E463D3B00293750 = {
 			isa = PBXGroup;
 			children = (
@@ -119,12 +133,9 @@
 		49424D162E463DEB00293750 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				49CB8CB32E5458FC00B58D55 /* CurlPageContainer.swift */,
+				493C07542E683F0A00FC6C69 /* Library */,
+				493C07522E68378500FC6C69 /* NavbarView.swift */,
 				49424D872E47AF3B00293750 /* LibraryContainerView.swift */,
-				49424D812E474B3100293750 /* PageView.swift */,
-				49424D7F2E4747C000293750 /* PagesView.swift */,
-				49424D762E47356E00293750 /* LibraryView.swift */,
-				49424D152E463DEB00293750 /* BookCoverView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -227,6 +238,7 @@
 				49424D772E47357200293750 /* LibraryView.swift in Sources */,
 				49424D1B2E463DEB00293750 /* ContentView.swift in Sources */,
 				49424D822E474B3400293750 /* PageView.swift in Sources */,
+				493C07532E68378C00FC6C69 /* NavbarView.swift in Sources */,
 				49424D1D2E463DEB00293750 /* BookMetadata.swift in Sources */,
 				49424D882E47AF4000293750 /* LibraryContainerView.swift in Sources */,
 				49424D1E2E463DEB00293750 /* Book.swift in Sources */,

@@ -29,12 +29,21 @@ struct LibraryView: View {
         case .pad:
             return isPortrait ? 220 : 320
         default:
-            return isPortrait ? 320 : 220
+            return isPortrait ? 150 : 220
+        }
+    }
+    
+    var coverHeight: CGFloat {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return isPortrait ? 250 : 350
+        default:
+            return isPortrait ? 170 : 250
         }
     }
 
     private var rowWidth: CGFloat {
-        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 1 : 3)
+        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 2 : 3)
         return CGFloat(booksPerRow) * coverWidth + CGFloat(booksPerRow - 1) * spacing
     }
 
@@ -97,7 +106,17 @@ struct LibraryView: View {
     }
 
     private func bookCover(_ book: Book) -> some View {
-        BookCoverView(book: book, isPortrait: $isPortrait, language: $language, onClickDownload: book.bookType == .downloaded ? libM.downloadBookFromStorageToDocuments : nil, onClickDelete: libM.deleteBookPages, onFinishDownload: loadBooks, onFinishDelete: loadBooks)
+        BookCoverView(book: book,
+                      isPortrait: $isPortrait,
+                      language: $language,
+                      onClickDownload: book.bookType == .downloaded ? libM.downloadBookFromStorageToDocuments : nil,
+                      onClickDelete: libM.deleteBookPages,
+                      onFinishDownload: loadBooks,
+                      onFinishDelete: loadBooks,
+                      gettitleFontSize: getTitleFontSize,
+                      coverWidth: coverWidth,
+                      coverHeight: coverHeight
+            )
             .scaleEffect(tappedBookId == book.id ? 0.95 : 1.0)
             .opacity(tappedBookId == book.id ? 0.7 : 1.0)
             .animation(.easeInOut(duration: 0.15), value: tappedBookId)
@@ -120,7 +139,7 @@ struct LibraryView: View {
     }
 
     private func chunkedBooks() -> [[Book]] {
-        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 1 : 3)
+        let booksPerRow = UIDevice.current.userInterfaceIdiom == .pad ? 3 : (isPortrait ? 2 : 3)
         return stride(from: 0, to: books.count, by: booksPerRow).map {
             Array(books[$0..<min($0 + booksPerRow, books.count)])
         }
@@ -143,6 +162,15 @@ struct LibraryView: View {
                     isInitializing = false
                 }
             }
+        }
+    }
+    
+    private func getTitleFontSize(_ wCount: Int) -> CGFloat {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return isPortrait ? 20 : 27
+        default:
+            return isPortrait ? 16 : 24
         }
     }
 }

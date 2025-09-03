@@ -32,32 +32,11 @@ struct BookCoverView: View {
         return book.bookType == .downloaded && !book.pages.isEmpty
     }
     
-    var titleFontSize: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return isPortrait ? 20 : 27
-        default:
-            if (book.metadata.name[language]?.count ?? 0) < 19 {return 24} else {return 20}
-        }
-    }
+    var gettitleFontSize: ((Int)->CGFloat)
     
-    var coverWidth: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return isPortrait ? 220 : 320
-        default:
-            return isPortrait ? 320 : 220
-        }
-    }
+    var coverWidth: CGFloat
     
-    var coverHeight: CGFloat {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .pad:
-            return isPortrait ? 250 : 350
-        default:
-            return isPortrait ? 320 : 250
-        }
-    }
+    var coverHeight: CGFloat
     
     // Constants for card design
     private enum Constants {
@@ -99,7 +78,7 @@ struct BookCoverView: View {
                                 .fill(bookThemeColor.opacity(Constants.colorTintOpacity))
                             
                             Text(book.metadata.name[language] ?? "")
-                                .font(.custom("Avenir-Heavy", size: titleFontSize))
+                                .font(.custom("Avenir-Heavy", size: gettitleFontSize(book.metadata.name[language]?.count ?? 0)))
                                 .foregroundStyle(.white)
                                 .padding(.bottom, Constants.titlePadding)
                                 .shadow(radius: 2)
@@ -107,7 +86,7 @@ struct BookCoverView: View {
                                 .multilineTextAlignment(.center)
                         }
                     )
-                    .frame(height: coverHeight * 0.25)
+                    .frame(height: coverHeight * 0.28)
             }
             .frame(width: coverWidth, height: coverHeight)
             .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
@@ -256,16 +235,35 @@ struct BookCoverView: View {
     }
 }
 
-struct BookCoverView_Previews: PreviewProvider {
-    static let libM: LibraryFileManager = .shared
-    @State static var p = true
-    @State static var l = "ua"
-    static var previews: some View {
-        if let book = libM.getBook(named: "The Rabbit and the Computer(lcl)") {
-            BookCoverView(book: book, isPortrait: $p, language: $l)
-                //.previewInterfaceOrientation(.landscapeRight)
-        } else {
-            Text("Book not found")
-        }
-    }
-}
+//struct BookCoverView_Previews: PreviewProvider {
+//    static let libM: LibraryFileManager = .shared
+//    @State static var p = true
+//    @State static var l = "ua"
+//    
+//    static var coverWidth: CGFloat {
+//        switch UIDevice.current.userInterfaceIdiom {
+//        case .pad:
+//            return p ? 220 : 320
+//        default:
+//            return p ? 160 : 220
+//        }
+//    }
+//    
+//    static var coverHeight: CGFloat {
+//        switch UIDevice.current.userInterfaceIdiom {
+//        case .pad:
+//            return p ? 250 : 350
+//        default:
+//            return p ? 200 : 250
+//        }
+//    }
+//    
+//    static var previews: some View {
+//        if let book = libM.getBook(named: "The Rabbit") {
+//            BookCoverView(book: book, isPortrait: $p, language: $l, coverWidth: coverWidth, coverHeight: coverHeight)
+//                //.previewInterfaceOrientation(.landscapeRight)
+//        } else {
+//            Text("Book not found")
+//        }
+//    }
+//}
