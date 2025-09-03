@@ -32,11 +32,21 @@ struct BookCoverView: View {
         return book.bookType == .downloaded && !book.pages.isEmpty
     }
     
-    var gettitleFontSize: ((Int)->CGFloat)
+    var gettitleFontSize: (()->CGFloat)
     
     var coverWidth: CGFloat
     
     var coverHeight: CGFloat
+    
+    var isRecommended: Bool = false
+    var fontSizeRecommended: CGFloat {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return 40
+        default:
+            return 40
+        }
+    }
     
     // Constants for card design
     private enum Constants {
@@ -78,7 +88,7 @@ struct BookCoverView: View {
                                 .fill(bookThemeColor.opacity(Constants.colorTintOpacity))
                             
                             Text(book.metadata.name[language] ?? "")
-                                .font(.custom("Avenir-Heavy", size: gettitleFontSize(book.metadata.name[language]?.count ?? 0)))
+                                .font(.custom("Avenir-Heavy", size: isRecommended ? fontSizeRecommended : gettitleFontSize()))
                                 .foregroundStyle(.white)
                                 .padding(.bottom, Constants.titlePadding)
                                 .shadow(radius: 2)

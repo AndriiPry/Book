@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        LibraryContainerView()
+        NavbarViewContainer()
     }
 }
 
-//#Preview("ContentView", traits: .landscapeRight) {
-//    ContentView()
-//}
+#Preview("ContentView", traits: .landscapeRight) {
+    ContentView()
+}
 
 #Preview {
     ContentView()

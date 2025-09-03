@@ -19,6 +19,8 @@ struct PagesView: View {
     @State var curlPageContainer: CurlPageContainer? = nil
     @Binding var isPortrait: Bool
     
+    @EnvironmentObject var tabBarVisibility: TabBarVisibility
+    
     private enum Constants {
         static let buttonBackgroundOpacity: Double = 0.8
         static let buttonStrokeOpacity: Double = 0.3
@@ -78,6 +80,10 @@ struct PagesView: View {
 
                 // Background pages with page curl
                 curlPageContainer?.ignoresSafeArea()
+                if pages.count == 0 {
+                    Text("No pages for this book were found.")
+                        .foregroundStyle(.white)
+                }
                 
                 // Top navigation
                 VStack {
@@ -127,19 +133,25 @@ struct PagesView: View {
             }
         }
         .onAppear {
-            curlPageContainer = CurlPageContainer(
-                pages: $pages,
-                currentIndex: $currentPageIndex,
-                isAudioMode: $isAudioMode,
-                isAudioPaused: $isAudioPaused,
-                isAudioPlaying: $isAudioPlaying,
-                isPortrait: $isPortrait,
-                clickedHomeButton: $clickedHomeButton
-            )
+            tabBarVisibility.isHidden = true
+            tabBarVisibility.isDisabled = true
+            if pages.count > 0 {
+                curlPageContainer = CurlPageContainer(
+                    pages: $pages,
+                    currentIndex: $currentPageIndex,
+                    isAudioMode: $isAudioMode,
+                    isAudioPaused: $isAudioPaused,
+                    isAudioPlaying: $isAudioPlaying,
+                    isPortrait: $isPortrait,
+                    clickedHomeButton: $clickedHomeButton
+                )
+            }
         }
         .onDisappear {
             curlPageContainer = nil
             pages.removeAll()
+            tabBarVisibility.isHidden = false
+            tabBarVisibility.isDisabled = false
             print("PagesView disappeared, cleared curlPageContainer")
         }
     }
@@ -178,10 +190,12 @@ struct PagesView_Previews: PreviewProvider {
     static let libM: LibraryFileManager = .shared
     //@State static var p: Bool = false
     @State static var p: Bool = true
+    @StateObject static var tabBarVisibility = TabBarVisibility()
     static var previews: some View {
-        if let book = libM.getBook(named: "The Rabbit and the Computer") {
+        if let book = libM.getBook(named: "The Rabbit") {
 //        if let book = libM.getBook(named: "The Singing Bird") {
             PagesView(pages: book.pages, clickedHomeButton: $ch, $p)
+                .environmentObject(tabBarVisibility)
                 //.previewInterfaceOrientation(.landscapeRight)
         } else {
             Text("Book not found")

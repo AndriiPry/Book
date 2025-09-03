@@ -1,5 +1,5 @@
 //
-//  LibraryContainerView.swift
+//  HomeView.swift
 //  AudioLibrary
 //
 //  Created by Oleksii on 09.08.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LibraryContainerView: View {
+struct HomeView: View {
     @State private var selectedPages: [Page]?
     @State private var readyToShowPages = false
     @State private var clickedHomeButton = false
@@ -17,6 +17,15 @@ struct LibraryContainerView: View {
     
     @State private var isPortrait = true
     private var libFileManager = LibraryFileManager.shared
+    
+    var globeYoffset: CGFloat {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .pad:
+            return 0
+        default:
+            return isPortrait ? -30 : 0
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -48,6 +57,7 @@ struct LibraryContainerView: View {
                             .clipShape(Capsule())
                             .padding()
                     }.transition(.opacity)
+                        .offset(y: globeYoffset)
                 }
             }
             .animation(.easeInOut(duration: 0.4), value: readyToShowPages)
@@ -72,7 +82,7 @@ struct LibraryContainerView: View {
             }
         }
         .onAppear() {
-            print(libFileManager.downloadedDirectoryExists)
+            //print(libFileManager.downloadedDirectoryExists)
             // LibraryView will handle initialization now
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
@@ -146,10 +156,15 @@ struct SimpleLoadingView: View {
     }
 }
 
-#Preview(traits: .landscapeRight) {
-    LibraryContainerView()
+struct HomeView_Previews_landscRight: PreviewProvider {
+    static var previews: some View {
+        HomeView()
+            .previewInterfaceOrientation(.landscapeRight)
+    }
 }
 
-#Preview {
-    LibraryContainerView()
+struct HomeView_Previews_norm: PreviewProvider {
+    static var previews: some View {
+        HomeView()
+    }
 }
