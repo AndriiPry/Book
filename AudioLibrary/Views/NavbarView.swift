@@ -101,7 +101,8 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
             homeView()
                 .opacity(selectedTab == 3 ? 1 : 0)
         }
-        .padding(.bottom, tabBarVisibility.isHidden ? 0 : 105)
+        .padding(.bottom, tabBarVisibility.isHidden ? 0 : 90)
+        .background(tabBarVisibility.isHidden ? .clear : .white)
     }
 
     private var tabBarContent: some View {
@@ -109,6 +110,7 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
             tabItems
                 .padding(.top, 13)
                 .opacity(tabBarVisibility.isHidden ? 0 : 1)
+                .background(tabBarVisibility.isHidden ? .clear : .white)
                 .animation(.easeInOut(duration: 0.3), value: tabBarVisibility.isHidden)
         }
         .frame(height: 110)
