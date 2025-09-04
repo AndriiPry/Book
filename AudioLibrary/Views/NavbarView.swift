@@ -101,21 +101,18 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
             homeView()
                 .opacity(selectedTab == 3 ? 1 : 0)
         }
-        .padding(.bottom, tabBarVisibility.isHidden ? 0 : 110) 
+        .padding(.bottom, tabBarVisibility.isHidden ? 0 : 105)
     }
 
-
     private var tabBarContent: some View {
-        Group {
-            if !tabBarVisibility.isHidden {
-                tabItems
-                    .padding(.top, 13)
-                    .frame(height: 90)
-                    .background(tabBarBackground)
-            }
+        ZStack {
+            tabItems
+                .padding(.top, 13)
+                .opacity(tabBarVisibility.isHidden ? 0 : 1)
+                .animation(.easeInOut(duration: 0.3), value: tabBarVisibility.isHidden)
         }
-        .opacity(tabBarVisibility.isHidden ? 0 : 1)
-        .animation(.easeInOut(duration: 0.3), value: tabBarVisibility.isHidden)
+        .frame(height: 110)
+        .clipped()
     }
     
     private var tabItems: some View {
@@ -132,7 +129,9 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
     private func tabButton(for tabIndex: Int) -> some View {
         Button(action: {
             if !tabBarVisibility.isDisabled {
-                selectedTab = tabIndex
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    selectedTab = tabIndex
+                }
             }
         }) {
             VStack(spacing: 4) {
@@ -144,18 +143,6 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
             .foregroundColor(selectedTab == tabIndex ? Color(red: 0.3, green: 0.4, blue: 0.7) : .black)
         }
         .disabled(tabBarVisibility.isDisabled)
-    }
-
-    private var tabBarBackground: some View {
-        Color.white
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(.white)
-                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -5)
-                }
-            )
-            .cornerRadius(20, corners: [.topLeft, .topRight])
     }
 
     private func tabTitle(_ index: Int) -> String {

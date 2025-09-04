@@ -148,10 +148,12 @@ struct PagesView: View {
             }
         }
         .onDisappear {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                tabBarVisibility.isHidden = false
+                tabBarVisibility.isDisabled = false
+            }
             curlPageContainer = nil
             pages.removeAll()
-            tabBarVisibility.isHidden = false
-            tabBarVisibility.isDisabled = false
             print("PagesView disappeared, cleared curlPageContainer")
         }
     }
