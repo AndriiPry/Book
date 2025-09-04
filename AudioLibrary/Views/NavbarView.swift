@@ -181,18 +181,27 @@ struct NavbarView<SearchView: View, SavedView: View, YouView: View, HomeView: Vi
 struct NavbarViewContainer: View {
     @StateObject private var tabBarVisibility = TabBarVisibility()
     @State private var selectedTab = 3
+    @AppStorage("termsAccepted") private var termsAccepted: Bool?
     
     var body: some View {
-        NavbarView(selectedTab: $selectedTab) {
-            SearchView()
-        } savedView: {
-            SavedView()
-        } youView: {
-            YouView()
-        } homeView: {
-            HomeView()
+        Group {
+            if termsAccepted == nil {
+                TermsAndConditionsView(termsAccepted: $termsAccepted)
+            } else if termsAccepted == true {
+                NavbarView(selectedTab: $selectedTab) {
+                    SearchView()
+                } savedView: {
+                    SavedView()
+                } youView: {
+                    YouView()
+                } homeView: {
+                    HomeView()
+                }
+                .environmentObject(tabBarVisibility)
+            } else {
+                TermsDeclinedView(termsAccepted: $termsAccepted)
+            }
         }
-        .environmentObject(tabBarVisibility)
     }
 }
 
