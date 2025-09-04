@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		493C07532E68378C00FC6C69 /* NavbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493C07522E68378500FC6C69 /* NavbarView.swift */; };
 		493C07562E69B63600FC6C69 /* TermsAndConditionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493C07552E69B62900FC6C69 /* TermsAndConditionsView.swift */; };
+		493C076A2E69D66500FC6C69 /* launchImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 493C07692E69D66500FC6C69 /* launchImage.png */; };
+		493C076C2E69D92600FC6C69 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 493C076B2E69D92600FC6C69 /* Launch Screen.storyboard */; };
+		493C07702E69DC7D00FC6C69 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493C076F2E69DC7B00FC6C69 /* SignInView.swift */; };
 		49424D0B2E463D7B00293750 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49424D052E463D7B00293750 /* Assets.xcassets */; };
 		49424D172E463DEB00293750 /* AudioLibraryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D0C2E463DEB00293750 /* AudioLibraryApp.swift */; };
 		49424D182E463DEB00293750 /* LibraryFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49424D132E463DEB00293750 /* LibraryFileManager.swift */; };
@@ -33,6 +36,9 @@
 /* Begin PBXFileReference section */
 		493C07522E68378500FC6C69 /* NavbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavbarView.swift; sourceTree = "<group>"; };
 		493C07552E69B62900FC6C69 /* TermsAndConditionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditionsView.swift; sourceTree = "<group>"; };
+		493C07692E69D66500FC6C69 /* launchImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = launchImage.png; sourceTree = "<group>"; };
+		493C076B2E69D92600FC6C69 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		493C076F2E69DC7B00FC6C69 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		49424CF72E463D3B00293750 /* TOMO books.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "TOMO books.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49424D052E463D7B00293750 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49424D0C2E463DEB00293750 /* AudioLibraryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioLibraryApp.swift; sourceTree = "<group>"; };
@@ -79,6 +85,15 @@
 			path = Library;
 			sourceTree = "<group>";
 		};
+		493C07662E69D63800FC6C69 /* LaunchScreens */ = {
+			isa = PBXGroup;
+			children = (
+				493C076B2E69D92600FC6C69 /* Launch Screen.storyboard */,
+				493C07692E69D66500FC6C69 /* launchImage.png */,
+			);
+			path = LaunchScreens;
+			sourceTree = "<group>";
+		};
 		49424CEE2E463D3B00293750 = {
 			isa = PBXGroup;
 			children = (
@@ -101,6 +116,7 @@
 		49424D082E463D7B00293750 /* AudioLibrary */ = {
 			isa = PBXGroup;
 			children = (
+				493C07662E69D63800FC6C69 /* LaunchScreens */,
 				49424D372E463FF300293750 /* Info.plist */,
 				49424D052E463D7B00293750 /* Assets.xcassets */,
 				49424D7A2E47367B00293750 /* Extensions */,
@@ -135,6 +151,7 @@
 		49424D162E463DEB00293750 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				493C076F2E69DC7B00FC6C69 /* SignInView.swift */,
 				493C07552E69B62900FC6C69 /* TermsAndConditionsView.swift */,
 				493C07542E683F0A00FC6C69 /* Library */,
 				493C07522E68378500FC6C69 /* NavbarView.swift */,
@@ -215,8 +232,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				493C076A2E69D66500FC6C69 /* launchImage.png in Resources */,
 				49CB8C8F2E4CC10200B58D55 /* AppResources in Resources */,
 				49424D0B2E463D7B00293750 /* Assets.xcassets in Resources */,
+				493C076C2E69D92600FC6C69 /* Launch Screen.storyboard in Resources */,
 				49424D8C2E4AE58200293750 /* Asset Catalog.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -238,6 +257,7 @@
 				49424D192E463DEB00293750 /* BookCoverView.swift in Sources */,
 				49424D1A2E463DEB00293750 /* Page.swift in Sources */,
 				49424D7C2E47368E00293750 /* UIImage+averageColor.swift in Sources */,
+				493C07702E69DC7D00FC6C69 /* SignInView.swift in Sources */,
 				49424D802E4747C300293750 /* PagesView.swift in Sources */,
 				49424D772E47357200293750 /* LibraryView.swift in Sources */,
 				49424D1B2E463DEB00293750 /* ContentView.swift in Sources */,

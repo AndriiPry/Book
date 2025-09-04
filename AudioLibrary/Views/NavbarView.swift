@@ -182,22 +182,27 @@ struct NavbarViewContainer: View {
     @StateObject private var tabBarVisibility = TabBarVisibility()
     @State private var selectedTab = 3
     @AppStorage("termsAccepted") private var termsAccepted: Bool?
+    @AppStorage("isSignedIn") private var isSignedIn: Bool = false
     
     var body: some View {
         Group {
             if termsAccepted == nil {
                 TermsAndConditionsView(termsAccepted: $termsAccepted)
             } else if termsAccepted == true {
-                NavbarView(selectedTab: $selectedTab) {
-                    SearchView()
-                } savedView: {
-                    SavedView()
-                } youView: {
-                    YouView()
-                } homeView: {
-                    HomeView()
+                if !isSignedIn {
+                    SignInView(isSignedIn: $isSignedIn)
+                } else {
+                    NavbarView(selectedTab: $selectedTab) {
+                        SearchView()
+                    } savedView: {
+                        SavedView()
+                    } youView: {
+                        YouView()
+                    } homeView: {
+                        HomeView()
+                    }
+                    .environmentObject(tabBarVisibility)
                 }
-                .environmentObject(tabBarVisibility)
             } else {
                 TermsDeclinedView(termsAccepted: $termsAccepted)
             }
